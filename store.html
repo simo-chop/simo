@@ -150,19 +150,6 @@
             if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
             if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 
-            // تنظيف الصور لضمان عدم وجود روابط طويلة معطلة
-            colors.forEach(item => {
-                if (!item.img || item.img.startsWith('http') || item.img.length > 35) {
-                    let nameLower = (item.name || '').toLowerCase();
-                    if (item.id === 'beige' || nameLower.includes('بيج')) item.img = 'beige.jpg';
-                    else if (item.id === 'blue' || nameLower.includes('أزرق')) item.img = 'blue.jpg';
-                    else if (item.id === 'green' || nameLower.includes('أخضر')) item.img = 'green.jpg';
-                    else if (item.id === 'gray' || nameLower.includes('رمادي')) item.img = 'gray.jpg';
-                    else if (item.id === 'pink' || nameLower.includes('وردي')) item.img = 'pink.jpg';
-                    else item.img = 'black.jpg';
-                }
-            });
-
             if (!categories.some(c => c.id === selectedCategory)) {
                 selectedCategory = categories[0].id;
             }
@@ -170,6 +157,22 @@
             renderCategoriesSelector();
             renderStoreProducts();
         }
+
+        // تفعيل التحديث الفوري (Realtime) عندما يقوم البائع بالتعديل في لوحة التحكم
+        sb.channel('public:app_state_store_realtime')
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
+              if (payload.new && payload.new.payload) {
+                  orders = payload.new.payload.orders || [];
+                  colors = payload.new.payload.colors || DEFAULT_COLORS;
+                  categories = payload.new.payload.categories || DEFAULT_CATEGORIES;
+                  if (!categories.some(c => c.id === selectedCategory)) {
+                      selectedCategory = categories[0].id;
+                  }
+                  renderCategoriesSelector();
+                  renderStoreProducts();
+              }
+          })
+          .subscribe();
 
         loadStoreData();
 
