@@ -48,9 +48,7 @@
         <!-- اختيار الفئات ديناميكياً -->
         <div class="space-y-4">
             <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">اختر الفئة</h3>
-            <div id="store-categories-container" class="grid grid-cols-2 gap-3.5">
-                <!-- يتم تعبئتها تلقائياً -->
-            </div>
+            <div id="store-categories-container" class="grid grid-cols-2 gap-3.5"></div>
         </div>
 
         <div class="space-y-4 pt-2">
@@ -137,6 +135,25 @@
         let orders = [];
         let selectedCategory = 'parasols';
 
+        // دالة ذكية لتصحيح وصياغة اسم الصورة لتعمل دائماً بشكل صحيح
+        function sanitizeImgPath(img, itemName = '') {
+            if (!img || img.startsWith('http') || img.length > 35) {
+                let nameLower = (itemName || '').toLowerCase();
+                if (nameLower.includes('بيج') || nameLower.includes('beige')) return 'beige.jpg';
+                if (nameLower.includes('أزرق') || nameLower.includes('blue')) return 'blue.jpg';
+                if (nameLower.includes('أخضر') || nameLower.includes('green')) return 'green.jpg';
+                if (nameLower.includes('رمادي') || nameLower.includes('gray')) return 'gray.jpg';
+                if (nameLower.includes('وردي') || nameLower.includes('pink')) return 'pink.jpg';
+                return 'black.jpg';
+            }
+            // إذا كان اسم الملف بدون .jpg مثل "black" نضيف لها .jpg تلقائياً
+            let clean = img.trim();
+            if (!clean.includes('.')) {
+                return clean + '.jpg';
+            }
+            return clean;
+        }
+
         async function loadStoreData() {
             try {
                 const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
@@ -150,6 +167,10 @@
             if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
             if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 
+            colors.forEach(item => {
+                item.img = sanitizeImgPath(item.img, item.name);
+            });
+
             if (!categories.some(c => c.id === selectedCategory)) {
                 selectedCategory = categories[0].id;
             }
@@ -158,13 +179,18 @@
             renderStoreProducts();
         }
 
-        // تفعيل التحديث الفوري (Realtime) عندما يقوم البائع بالتعديل في لوحة التحكم
+        // نظام المزامنة الحية (Real-time) مع الحفاظ على تصحيح الصور فوراً
         sb.channel('public:app_state_store_realtime')
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
               if (payload.new && payload.new.payload) {
                   orders = payload.new.payload.orders || [];
                   colors = payload.new.payload.colors || DEFAULT_COLORS;
                   categories = payload.new.payload.categories || DEFAULT_CATEGORIES;
+
+                  colors.forEach(item => {
+                      item.img = sanitizeImgPath(item.img, item.name);
+                  });
+
                   if (!categories.some(c => c.id === selectedCategory)) {
                       selectedCategory = categories[0].id;
                   }
@@ -213,14 +239,16 @@
             list.innerHTML = filteredProducts.map((item) => {
                 const existingInput = document.getElementById(`qty-${item.id}`);
                 const currentQty = existingInput ? existingInput.value : 0;
+                const finalImg = sanitizeImgPath(item.img, item.name);
 
                 return `
                 <div class="glass-card p-4 rounded-2xl flex items-center justify-between gap-4 transition-smooth hover:border-indigo-500/40">
                     <div class="flex items-center gap-3.5">
-                        <img src="${item.img}" onerror="this.src='black.jpg'" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة">
+                        <img src="${finalImg}" onerror="this.src='black.jpg'" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة">
                         <div>
                             <h4 class="font-black text-white text-xs sm:text-sm">${item.name}</h4>
-                            <p class="text-xs text-indigo-400 font-extrabold mt-1">${item.price} د.م</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${finalImg}</p>
+                            <p class="text-xs text-indigo-400 font-extrabold mt-0.5">${item.price} د.م</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
