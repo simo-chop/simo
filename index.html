@@ -196,6 +196,9 @@
                     <i class="fa-solid fa-boxes-stacked text-indigo-400"></i> <span>إدارة المخزون والمنتجات</span>
                 </h2>
                 <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="forceCleanAndFixImages()" class="text-xs bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span>تصحيح كل الصور تلقائياً</span>
+                    </button>
                     <button onclick="openCategoryManagerModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
                         <i class="fa-solid fa-folder-tree"></i> <span>إدارة وعرض الفئات</span>
                     </button>
@@ -255,7 +258,7 @@
                     <input id="edit-price-input" type="number" step="0.5" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-300 mb-1">اسم ملف الصورة (مثل black.jpg):</label>
+                    <label class="block font-bold text-slate-300 mb-1">اسم ملف الصورة (مثل black.jpg أو beige.jpg):</label>
                     <input id="edit-img-input" type="text" placeholder="black.jpg" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
                 </div>
             </div>
@@ -372,6 +375,20 @@
             } catch (e) {}
 
             if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            
+            // تصحيح تنظيف روابط الصور تلقائياً لجعلها تطابق أسماء الملفات المحلية
+            colors.forEach(item => {
+                if (!item.img || item.img.startsWith('http') || item.img.length > 35) {
+                    let nameLower = (item.name || '').toLowerCase();
+                    if (item.id === 'beige' || nameLower.includes('بيج') || nameLower.includes('beige')) item.img = 'beige.jpg';
+                    else if (item.id === 'blue' || nameLower.includes('أزرق') || nameLower.includes('blue')) item.img = 'blue.jpg';
+                    else if (item.id === 'green' || nameLower.includes('أخضر') || nameLower.includes('green')) item.img = 'green.jpg';
+                    else if (item.id === 'gray' || nameLower.includes('رمادي') || nameLower.includes('gray')) item.img = 'gray.jpg';
+                    else if (item.id === 'pink' || nameLower.includes('وردي') || nameLower.includes('pink')) item.img = 'pink.jpg';
+                    else item.img = 'black.jpg';
+                }
+            });
+
             if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 
             if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
@@ -392,6 +409,22 @@
         }
 
         loadDataFromSupabase();
+
+        // زر تصحيح إجباري لجميع الصور بضغطة زر
+        async function forceCleanAndFixImages() {
+            colors.forEach(item => {
+                let nameLower = (item.name || '').toLowerCase();
+                if (item.id === 'beige' || nameLower.includes('بيج') || nameLower.includes('beige')) item.img = 'beige.jpg';
+                else if (item.id === 'blue' || nameLower.includes('أزرق') || nameLower.includes('blue')) item.img = 'blue.jpg';
+                else if (item.id === 'green' || nameLower.includes('أخضر') || nameLower.includes('green')) item.img = 'green.jpg';
+                else if (item.id === 'gray' || nameLower.includes('رمادي') || nameLower.includes('gray')) item.img = 'gray.jpg';
+                else if (item.id === 'pink' || nameLower.includes('وردي') || nameLower.includes('pink')) item.img = 'pink.jpg';
+                else item.img = 'black.jpg';
+            });
+            await saveAllToSupabase();
+            renderInventoryList();
+            alert('تم تصحيح وتثبيت جميع مسارات الصور المحلية بنجاح!');
+        }
 
         function settleCourierDebt() {
             if (confirm('هل أنت متأكد من تصفير حساب المال المتبقي عند اللفرور؟')) {
@@ -817,6 +850,7 @@
             select.innerHTML = colors.map(c => `<option value="${c.id}">${c.name} (المتوفر: ${c.stock})</option>`).join('');
             document.getElementById('stock-modal').classList.remove('hidden');
         }
+        function closeRestockManagerModal() {}
         function closeRestockModal() { document.getElementById('stock-modal').classList.add('hidden'); }
         function handleRestockSubmit() {
             const select = document.getElementById('restock-color-select');
