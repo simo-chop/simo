@@ -37,20 +37,41 @@
 
     <main class="max-w-3xl mx-auto px-4 mt-6 space-y-6">
         
-        <!-- بانر الترحيب العرضي -->
+        <!-- بانر الترحيب -->
         <div class="bg-gradient-to-r from-indigo-900/60 via-slate-900 to-slate-900 border border-indigo-500/30 p-5 rounded-3xl shadow-lg flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl flex-shrink-0">
-                <i class="fa-solid fa-umbrella"></i>
+                <i class="fa-solid fa-store"></i>
             </div>
             <div>
-                <h2 class="text-xs font-black text-white" data-i18n="bannerTitle">أفضل مظلات مقاومة للرياح والأمطار</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5" data-i18n="bannerSub">اختر اللون المطلوب، حدد الكمية، واملأ معلومات التوصيل.</p>
+                <h2 class="text-xs font-black text-white" data-i18n="bannerTitle">متجر Simo Chop - طنجة</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5" data-i18n="bannerSub">اختر الفئة المطلوبة لتصفح المنتجات المتوفرة.</p>
             </div>
         </div>
 
-        <!-- قائمة المنتجات الفخمة -->
+        <!-- اختيار الفئات (Categories Selector) -->
         <div class="space-y-4">
-            <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1" data-i18n="selectProductsTitle">الألوان المتوفرة</h3>
+            <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1" data-i18n="categoriesTitle">اختر الفئة</h3>
+            <div class="grid grid-cols-2 gap-3.5">
+                <button onclick="selectCategory('parasols')" id="cat-btn-parasols" 
+                    class="glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
+                        <i class="fa-solid fa-umbrella"></i>
+                    </div>
+                    <span class="font-black text-xs text-white" data-i18n="catParasols">المظلات</span>
+                </button>
+                <button onclick="selectCategory('controllers')" id="cat-btn-controllers" 
+                    class="glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group">
+                    <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <span class="font-black text-xs text-white" data-i18n="catControllers">المانيطات</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- قائمة المنتجات الخاصة بالفئة المختارة -->
+        <div class="space-y-4 pt-2">
+            <h3 id="currentCategoryTitle" class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">المظلات المتوفرة</h3>
             <div id="store-products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- يتم تعبئتها ديناميكياً -->
             </div>
@@ -86,7 +107,7 @@
         </div>
     </main>
 
-    <!-- شريط المجموع العائم أسفل الشاشة (Sticky Bottom Bar) -->
+    <!-- شريط المجموع العائم أسفل الشاشة -->
     <div class="fixed bottom-0 left-0 right-0 glass-header border-t border-slate-800 p-4 z-40 shadow-2xl">
         <div class="max-w-3xl mx-auto flex justify-between items-center gap-4">
             <div>
@@ -116,9 +137,11 @@
             ar: {
                 storeTitle: "Simo Chop",
                 storeSubtitle: "التوصيل متوفر في طنجة",
-                bannerTitle: "أفضل مظلات مقاومة للرياح والأمطار",
-                bannerSub: "اختر اللون المطلوب، حدد الكمية، واملأ معلومات التوصيل.",
-                selectProductsTitle: "الألوان والمنتجات المتوفرة",
+                bannerTitle: "متجر Simo Chop - طنجة",
+                bannerSub: "اختر الفئة المطلوبة لتصفح المنتجات المتوفرة.",
+                categoriesTitle: "اختر الفئة",
+                catParasols: "المظلات",
+                catControllers: "المانيطات",
                 checkoutTitle: "معلومات التوصيل (طنجة)",
                 fullName: "الاسم الكامل *",
                 phoneNumber: "رقم الهاتف *",
@@ -130,17 +153,16 @@
                 successTitle: "تم إرسال طلبك بنجاح!",
                 successSub: "شكراً لتسوقك من Simo Chop. سيقوم البائع بمراجعة طلبك والاتصال بك قريباً لتأكيد التوصيل في طنجة.",
                 okBtn: "حسناً",
-                currency: "د.م",
-                units: "قطعة",
-                addBtn: "إضافة",
-                removeBtn: "إزالة"
+                currency: "د.م"
             },
             fr: {
                 storeTitle: "Simo Chop",
                 storeSubtitle: "Livraison disponible à Tanger",
-                bannerTitle: "Meilleurs parasols résistants au vent",
-                bannerSub: "Choisissez la couleur, la quantité et vos coordonnées.",
-                selectProductsTitle: "Couleurs et produits disponibles",
+                bannerTitle: "Boutique Simo Chop - Tanger",
+                bannerSub: "Choisissez la catégorie pour voir les produits.",
+                categoriesTitle: "Choisir la catégorie",
+                catParasols: "Parasols",
+                catControllers: "Manettes",
                 checkoutTitle: "Informations de livraison (Tanger)",
                 fullName: "Nom complet *",
                 phoneNumber: "Téléphone *",
@@ -150,19 +172,18 @@
                 confirmOrderBtn: "Confirmer la commande",
                 completeOrderBtn: "Commander",
                 successTitle: "Commande envoyée avec succès !",
-                successSub: "Merci pour vos achats chez Simo Chop. Le vendeur vous contactera bientôt.",
+                successSub: "Merci pour vos achats chez Simo Chop.",
                 okBtn: "OK",
-                currency: "DH",
-                units: "unités",
-                addBtn: "Ajouter",
-                removeBtn: "Retirer"
+                currency: "DH"
             },
             en: {
                 storeTitle: "Simo Chop",
                 storeSubtitle: "Delivery available in Tangier",
-                bannerTitle: "Best windproof & rainproof umbrellas",
-                bannerSub: "Choose your color, quantity, and delivery details.",
-                selectProductsTitle: "Available Products & Colors",
+                bannerTitle: "Simo Chop Store - Tangier",
+                bannerSub: "Choose a category to browse products.",
+                categoriesTitle: "Select Category",
+                catParasols: "Umbrellas",
+                catControllers: "Controllers",
                 checkoutTitle: "Delivery Information (Tangier)",
                 fullName: "Full Name *",
                 phoneNumber: "Phone Number *",
@@ -172,12 +193,9 @@
                 confirmOrderBtn: "Confirm & Send Order",
                 completeOrderBtn: "Checkout",
                 successTitle: "Order sent successfully!",
-                successSub: "Thank you for shopping with Simo Chop. The seller will contact you soon.",
+                successSub: "Thank you for shopping with Simo Chop.",
                 okBtn: "OK",
-                currency: "DH",
-                units: "units",
-                addBtn: "Add",
-                removeBtn: "Remove"
+                currency: "DH"
             }
         };
 
@@ -216,18 +234,23 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // المنتجات مع تحديد الفئة (category: 'parasols' أو 'controllers')
         const DEFAULT_COLORS = [
-            { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg' },
-            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg' },
-            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg' },
-            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg' },
-            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg' },
-            { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg' }
+            { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
+            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
+            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
+            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
+            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
+            { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg', category: 'parasols' },
+            // منتجان فقط للمانيطات كما طلبت
+            { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200', category: 'controllers' },
+            { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'https://images.unsplash.com/photo-1612287233306-604812a2a67e?w=200', category: 'controllers' }
         ];
 
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
         let orders = [];
         let courierDebt = 0;
+        let selectedCategory = 'parasols'; // الفئة الافتتاحية
 
         async function loadStoreData() {
             try {
@@ -249,14 +272,37 @@
         loadStoreData();
         changeLanguage(currentLang);
 
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.getElementById('cat-btn-parasols').className = cat === 'parasols' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
+            document.getElementById('cat-btn-controllers').className = cat === 'controllers' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
+            
+            const titleEl = document.getElementById('currentCategoryTitle');
+            if (cat === 'parasols') {
+                titleEl.textContent = currentLang === 'fr' ? 'Parasols disponibles' : currentLang === 'en' ? 'Available Umbrellas' : 'المظلات المتوفرة';
+            } else {
+                titleEl.textContent = currentLang === 'fr' ? 'Manettes disponibles' : currentLang === 'en' ? 'Available Controllers' : 'المانيطات المتوفرة';
+            }
+
+            renderStoreProducts();
+        }
+
         function renderStoreProducts() {
             const list = document.getElementById('store-products-list');
             if (!list) return;
 
-            list.innerHTML = colors.map((item) => `
+            // تصفية المنتجات حسب الفئة المختارة
+            const filteredProducts = colors.filter(item => (item.category || 'parasols') === selectedCategory);
+
+            list.innerHTML = filteredProducts.map((item) => {
+                // احتفاظ بالكمية المكتوبة سابقاً إن وجدت
+                const existingInput = document.getElementById(`qty-${item.id}`);
+                const currentQty = existingInput ? existingInput.value : 0;
+
+                return `
                 <div class="glass-card p-4 rounded-2xl flex items-center justify-between gap-4 transition-smooth hover:border-indigo-500/40">
                     <div class="flex items-center gap-3.5">
-                        <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة المظلة">
+                        <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة المنتج">
                         <div>
                             <h4 class="font-black text-white text-xs sm:text-sm">${item.name}</h4>
                             <p class="text-xs text-indigo-400 font-extrabold mt-1">${item.price} ${translations[currentLang].currency}</p>
@@ -264,12 +310,13 @@
                     </div>
                     <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
                         <button type="button" onclick="adjustQty('${item.id}', -1)" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center transition-smooth text-xs">-</button>
-                        <input type="number" min="0" value="0" id="qty-${item.id}" oninput="calculateStoreTotal()" 
+                        <input type="number" min="0" value="${currentQty}" id="qty-${item.id}" oninput="calculateStoreTotal()" 
                             class="w-10 bg-transparent text-white font-black text-center text-xs focus:outline-none">
                         <button type="button" onclick="adjustQty('${item.id}', 1)" class="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center transition-smooth text-xs">+</button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             calculateStoreTotal();
         }
 
@@ -325,7 +372,7 @@
 
                 let summaryParts = selectedItems.map(i => {
                     const prod = colors.find(c => c.id === i.productId);
-                    return `${prod ? prod.name : ''} (${translations[currentLang].units}: ${i.qty})`;
+                    return `${prod ? prod.name : ''} (العدد: ${i.qty})`;
                 });
 
                 const newOrder = {
@@ -338,7 +385,7 @@
                     address: document.getElementById('custAddress').value.trim(),
                     price: totalAmount,
                     deliveryFee: 20,
-                    status: 'pending_seller', // يذهب حصرياً للوحة البائع أولاً بانتظار التأكيد
+                    status: 'pending_seller',
                     createdAt: Date.now()
                 };
 
