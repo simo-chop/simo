@@ -17,7 +17,6 @@
 </head>
 <body class="min-h-screen pb-32 text-slate-100">
 
-    <!-- الهيدر الفخم -->
     <header class="glass-header sticky top-0 z-50 shadow-xl">
         <div class="max-w-3xl mx-auto px-4 py-3.5 flex justify-between items-center gap-4">
             <div class="flex items-center gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-1 shadow-inner">
@@ -27,230 +26,123 @@
             </div>
             <div class="flex items-center gap-3">
                 <div class="text-right">
-                    <h1 class="text-sm font-black tracking-wide text-white" data-i18n="storeTitle">Simo Chop</h1>
-                    <p class="text-[10px] text-indigo-400 font-bold" data-i18n="storeSubtitle">التوصيل متوفر في طنجة</p>
+                    <h1 class="text-sm font-black tracking-wide text-white">Simo Chop</h1>
+                    <p class="text-[10px] text-indigo-400 font-bold">التوصيل متوفر في طنجة</p>
                 </div>
-                <img src="logo.png" alt="Simo Chop Logo" class="h-11 w-11 rounded-2xl shadow-lg object-cover flex-shrink-0 border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
+                <img src="logo.png" alt="Logo" class="h-11 w-11 rounded-2xl shadow-lg object-cover flex-shrink-0 border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
             </div>
         </div>
     </header>
 
     <main class="max-w-3xl mx-auto px-4 mt-6 space-y-6">
-        
-        <!-- بانر الترحيب -->
         <div class="bg-gradient-to-r from-indigo-900/60 via-slate-900 to-slate-900 border border-indigo-500/30 p-5 rounded-3xl shadow-lg flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl flex-shrink-0">
                 <i class="fa-solid fa-store"></i>
             </div>
             <div>
-                <h2 class="text-xs font-black text-white" data-i18n="bannerTitle">متجر Simo Chop - طنجة</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5" data-i18n="bannerSub">اختر الفئة المطلوبة لتصفح المنتجات المتوفرة.</p>
+                <h2 class="text-xs font-black text-white">متجر Simo Chop - طنجة</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">اختر الفئة المطلوبة لتصفح المنتجات المتوفرة.</p>
             </div>
         </div>
 
-        <!-- اختيار الفئات (Categories Selector) -->
+        <!-- اختيار الفئات -->
         <div class="space-y-4">
-            <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1" data-i18n="categoriesTitle">اختر الفئة</h3>
+            <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">اختر الفئة</h3>
             <div class="grid grid-cols-2 gap-3.5">
                 <button onclick="selectCategory('parasols')" id="cat-btn-parasols" 
                     class="glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group">
                     <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
                         <i class="fa-solid fa-umbrella"></i>
                     </div>
-                    <span class="font-black text-xs text-white" data-i18n="catParasols">المظلات</span>
+                    <span class="font-black text-xs text-white">المظلات</span>
                 </button>
                 <button onclick="selectCategory('controllers')" id="cat-btn-controllers" 
                     class="glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group">
                     <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
                         <i class="fa-solid fa-gamepad"></i>
                     </div>
-                    <span class="font-black text-xs text-white" data-i18n="catControllers">المانيطات</span>
+                    <span class="font-black text-xs text-white">المانيطات</span>
                 </button>
             </div>
         </div>
 
-        <!-- قائمة المنتجات الخاصة بالفئة المختارة -->
         <div class="space-y-4 pt-2">
             <h3 id="currentCategoryTitle" class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">المظلات المتوفرة</h3>
-            <div id="store-products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- يتم تعبئتها ديناميكياً -->
-            </div>
+            <div id="store-products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- نموذج معلومات الزبون -->
         <div class="glass-card p-6 rounded-3xl space-y-4">
             <h3 class="text-sm font-extrabold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-                <i class="fa-solid fa-truck-fast text-emerald-400"></i> <span data-i18n="checkoutTitle">معلومات التوصيل (طنجة)</span>
+                <i class="fa-solid fa-truck-fast text-emerald-400"></i> <span>معلومات التوصيل (طنجة)</span>
             </h3>
             <form id="customerOrderForm" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="fullName">الاسم الكامل *</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">الاسم الكامل *</label>
                     <input type="text" id="custName" required placeholder="الاسم الكريم..."
-                        class="w-full px-4 py-3.5 rounded-2xl border border-slate-700/80 text-xs font-bold bg-slate-950 text-white focus:border-indigo-500 focus:outline-none transition-smooth">
+                        class="w-full px-4 py-3.5 rounded-2xl border border-slate-700/80 text-xs font-bold bg-slate-950 text-white focus:border-indigo-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="phoneNumber">رقم الهاتف *</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">رقم الهاتف *</label>
                     <input type="tel" id="custPhone" required placeholder="06XXXXXXXX" dir="ltr"
-                        class="w-full px-4 py-3.5 rounded-2xl border border-slate-700/80 text-xs font-bold bg-slate-950 text-white focus:border-indigo-500 focus:outline-none text-right transition-smooth">
+                        class="w-full px-4 py-3.5 rounded-2xl border border-slate-700/80 text-xs font-bold bg-slate-950 text-white focus:border-indigo-500 focus:outline-none text-right">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="address">عنوان التوصيل (الحي، الشارع) *</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">عنوان التوصيل (الحي، الشارع) *</label>
                     <textarea id="custAddress" required rows="2" placeholder="مثال: حي مرس هسكان، شارع محمد الخامس..."
-                        class="w-full px-4 py-3 rounded-2xl border border-slate-700/80 text-xs bg-slate-950 text-white focus:border-indigo-500 focus:outline-none transition-smooth" data-i18n-placeholder="addressPlaceholder"></textarea>
+                        class="w-full px-4 py-3 rounded-2xl border border-slate-700/80 text-xs bg-slate-950 text-white focus:border-indigo-500 focus:outline-none"></textarea>
                 </div>
-
-                <button type="submit" id="submitOrderBtn"
+                <button type="submit"
                     class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-4 rounded-2xl shadow-lg transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-check-circle text-base"></i> <span data-i18n="confirmOrderBtn">تأكيد وإرسال الطلب الآن</span>
+                    <i class="fa-solid fa-check-circle text-base"></i> <span>تأكيد وإرسال الطلب الآن</span>
                 </button>
             </form>
         </div>
     </main>
 
-    <!-- شريط المجموع العائم أسفل الشاشة -->
     <div class="fixed bottom-0 left-0 right-0 glass-header border-t border-slate-800 p-4 z-40 shadow-2xl">
         <div class="max-w-3xl mx-auto flex justify-between items-center gap-4">
             <div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider" data-i18n="totalLabel">المجموع الإجمالي</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">المجموع الإجمالي</p>
                 <p id="storeTotalPrice" class="text-xl font-black text-emerald-400 mt-0.5">0 د.م</p>
             </div>
             <button onclick="scrollToCheckout()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs shadow-lg transition-smooth active:scale-95 flex items-center gap-2">
-                <i class="fa-solid fa-arrow-down"></i> <span data-i18n="completeOrderBtn">إتمام الطلب</span>
+                <i class="fa-solid fa-arrow-down"></i> <span>إتمام الطلب</span>
             </button>
         </div>
     </div>
 
-    <!-- نافذة نجاح الطلب -->
     <div id="success-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card border border-slate-700 text-white w-full max-w-sm rounded-3xl p-7 text-center space-y-4 shadow-2xl">
             <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
                 <i class="fa-solid fa-check"></i>
             </div>
-            <h3 class="text-base font-black" data-i18n="successTitle">تم إرسال طلبك بنجاح!</h3>
-            <p class="text-xs text-slate-400 leading-relaxed" data-i18n="successSub">شكراً لتسوقك من Simo Chop. سيقوم البائع بمراجعة طلبك والاتصال بك قريباً لتأكيد التوصيل في طنجة.</p>
-            <button onclick="closeSuccessModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-2xl font-black text-xs transition-smooth shadow-lg" data-i18n="okBtn">حسناً</button>
+            <h3 class="text-base font-black">تم إرسال طلبك بنجاح!</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">شكراً لتسوقك من Simo Chop. سيقوم البائع بمراجعة طلبك والاتصال بك قريباً.</p>
+            <button onclick="closeSuccessModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-2xl font-black text-xs transition-smooth shadow-lg">حسناً</button>
         </div>
     </div>
 
     <script>
-        const translations = {
-            ar: {
-                storeTitle: "Simo Chop",
-                storeSubtitle: "التوصيل متوفر في طنجة",
-                bannerTitle: "متجر Simo Chop - طنجة",
-                bannerSub: "اختر الفئة المطلوبة لتصفح المنتجات المتوفرة.",
-                categoriesTitle: "اختر الفئة",
-                catParasols: "المظلات",
-                catControllers: "المانيطات",
-                checkoutTitle: "معلومات التوصيل (طنجة)",
-                fullName: "الاسم الكامل *",
-                phoneNumber: "رقم الهاتف *",
-                address: "عنوان التوصيل (الحي، الشارع) *",
-                addressPlaceholder: "مثال: حي مرس هسكان، شارع محمد الخامس...",
-                totalLabel: "المجموع الإجمالي",
-                confirmOrderBtn: "تأكيد وإرسال الطلب الآن",
-                completeOrderBtn: "إتمام الطلب",
-                successTitle: "تم إرسال طلبك بنجاح!",
-                successSub: "شكراً لتسوقك من Simo Chop. سيقوم البائع بمراجعة طلبك والاتصال بك قريباً لتأكيد التوصيل في طنجة.",
-                okBtn: "حسناً",
-                currency: "د.م"
-            },
-            fr: {
-                storeTitle: "Simo Chop",
-                storeSubtitle: "Livraison disponible à Tanger",
-                bannerTitle: "Boutique Simo Chop - Tanger",
-                bannerSub: "Choisissez la catégorie pour voir les produits.",
-                categoriesTitle: "Choisir la catégorie",
-                catParasols: "Parasols",
-                catControllers: "Manettes",
-                checkoutTitle: "Informations de livraison (Tanger)",
-                fullName: "Nom complet *",
-                phoneNumber: "Téléphone *",
-                address: "Adresse de livraison *",
-                addressPlaceholder: "Ex: Quartier Marshan, Avenue Mohammed V...",
-                totalLabel: "Total général",
-                confirmOrderBtn: "Confirmer la commande",
-                completeOrderBtn: "Commander",
-                successTitle: "Commande envoyée avec succès !",
-                successSub: "Merci pour vos achats chez Simo Chop.",
-                okBtn: "OK",
-                currency: "DH"
-            },
-            en: {
-                storeTitle: "Simo Chop",
-                storeSubtitle: "Delivery available in Tangier",
-                bannerTitle: "Simo Chop Store - Tangier",
-                bannerSub: "Choose a category to browse products.",
-                categoriesTitle: "Select Category",
-                catParasols: "Umbrellas",
-                catControllers: "Controllers",
-                checkoutTitle: "Delivery Information (Tangier)",
-                fullName: "Full Name *",
-                phoneNumber: "Phone Number *",
-                address: "Delivery Address *",
-                addressPlaceholder: "Ex: Marshan district, Mohammed V street...",
-                totalLabel: "Grand Total",
-                confirmOrderBtn: "Confirm & Send Order",
-                completeOrderBtn: "Checkout",
-                successTitle: "Order sent successfully!",
-                successSub: "Thank you for shopping with Simo Chop.",
-                okBtn: "OK",
-                currency: "DH"
-            }
-        };
-
-        let currentLang = localStorage.getItem('APP_LANG') || 'ar';
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('APP_LANG', lang);
-            const htmlRoot = document.getElementById('htmlRoot');
-            htmlRoot.setAttribute('lang', lang);
-            htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-
-            ['ar', 'fr', 'en'].forEach(l => {
-                const btn = document.getElementById(`lang-${l}`);
-                if (btn) {
-                    btn.className = l === lang ? "px-3 py-1 text-[11px] font-bold rounded-lg transition-smooth bg-indigo-600 text-white shadow-md" : "px-3 py-1 text-[11px] font-bold rounded-lg transition-smooth text-slate-400 hover:text-white";
-                }
-            });
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) el.textContent = translations[lang][key];
-            });
-
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (translations[lang][key]) el.placeholder = translations[lang][key];
-            });
-
-            renderStoreProducts();
-        }
-
         const SUPABASE_URL = "https://odrqwpcwcdfftjxatkyx.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcnF3cGN3Y2RmZnRqeGF0a3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNjA2MzAsImV4cCI6MjEwNzkzNjYzMH0.Fvjz335UThZ0OfnwpdKCoO2Zg_WQA8jinFJnGV4CrB0";
 
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // المنتجات مع تحديد الفئة (category: 'parasols' أو 'controllers')
         const DEFAULT_COLORS = [
             { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
-            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
-            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
-            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
-            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
             { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg', category: 'parasols' },
-            // منتجان فقط للمانيطات كما طلبت
+            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
+            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
+            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
+            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
             { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200', category: 'controllers' },
             { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'https://images.unsplash.com/photo-1612287233306-604812a2a67e?w=200', category: 'controllers' }
         ];
 
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
         let orders = [];
-        let courierDebt = 0;
-        let selectedCategory = 'parasols'; // الفئة الافتتاحية
+        let selectedCategory = 'parasols';
 
         async function loadStoreData() {
             try {
@@ -258,32 +150,19 @@
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || DEFAULT_COLORS;
-                    courierDebt = data.payload.courierDebt || 0;
                 }
             } catch (e) {}
             renderStoreProducts();
         }
 
-        async function saveStoreData() {
-            const payload = { orders, colors, courierDebt };
-            await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
-        }
-
         loadStoreData();
-        changeLanguage(currentLang);
 
         function selectCategory(cat) {
             selectedCategory = cat;
             document.getElementById('cat-btn-parasols').className = cat === 'parasols' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
             document.getElementById('cat-btn-controllers').className = cat === 'controllers' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
             
-            const titleEl = document.getElementById('currentCategoryTitle');
-            if (cat === 'parasols') {
-                titleEl.textContent = currentLang === 'fr' ? 'Parasols disponibles' : currentLang === 'en' ? 'Available Umbrellas' : 'المظلات المتوفرة';
-            } else {
-                titleEl.textContent = currentLang === 'fr' ? 'Manettes disponibles' : currentLang === 'en' ? 'Available Controllers' : 'المانيطات المتوفرة';
-            }
-
+            document.getElementById('currentCategoryTitle').textContent = cat === 'parasols' ? 'المظلات المتوفرة' : 'المانيطات المتوفرة';
             renderStoreProducts();
         }
 
@@ -291,11 +170,9 @@
             const list = document.getElementById('store-products-list');
             if (!list) return;
 
-            // تصفية المنتجات حسب الفئة المختارة
             const filteredProducts = colors.filter(item => (item.category || 'parasols') === selectedCategory);
 
             list.innerHTML = filteredProducts.map((item) => {
-                // احتفاظ بالكمية المكتوبة سابقاً إن وجدت
                 const existingInput = document.getElementById(`qty-${item.id}`);
                 const currentQty = existingInput ? existingInput.value : 0;
 
@@ -305,7 +182,7 @@
                         <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة المنتج">
                         <div>
                             <h4 class="font-black text-white text-xs sm:text-sm">${item.name}</h4>
-                            <p class="text-xs text-indigo-400 font-extrabold mt-1">${item.price} ${translations[currentLang].currency}</p>
+                            <p class="text-xs text-indigo-400 font-extrabold mt-1">${item.price} د.م</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -339,64 +216,60 @@
                     total += q * (item.price || 130);
                 }
             });
-            document.getElementById('storeTotalPrice').textContent = total + ' ' + translations[currentLang].currency;
+            document.getElementById('storeTotalPrice').textContent = total + ' د.م';
         }
 
         function scrollToCheckout() {
             document.getElementById('customerOrderForm').scrollIntoView({ behavior: 'smooth' });
         }
 
-        const customerOrderForm = document.getElementById('customerOrderForm');
-        if (customerOrderForm) {
-            customerOrderForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+        document.getElementById('customerOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let selectedItems = [];
+            let totalAmount = 0;
 
-                let selectedItems = [];
-                let totalAmount = 0;
-
-                colors.forEach(item => {
-                    const input = document.getElementById(`qty-${item.id}`);
-                    if (input) {
-                        const q = parseInt(input.value) || 0;
-                        if (q > 0) {
-                            selectedItems.push({ productId: item.id, qty: q });
-                            totalAmount += q * (item.price || 130);
-                        }
+            colors.forEach(item => {
+                const input = document.getElementById(`qty-${item.id}`);
+                if (input) {
+                    const q = parseInt(input.value) || 0;
+                    if (q > 0) {
+                        selectedItems.push({ productId: item.id, qty: q });
+                        totalAmount += q * (item.price || 130);
                     }
-                });
-
-                if (selectedItems.length === 0) {
-                    alert(currentLang === 'fr' ? 'Veuillez sélectionner au moins un article' : currentLang === 'en' ? 'Please select at least one item' : 'المرجو اختيار منتج واحد على الأقل');
-                    return;
                 }
-
-                let summaryParts = selectedItems.map(i => {
-                    const prod = colors.find(c => c.id === i.productId);
-                    return `${prod ? prod.name : ''} (العدد: ${i.qty})`;
-                });
-
-                const newOrder = {
-                    id: 'ORD_' + Date.now(),
-                    productName: summaryParts.join(' + '),
-                    items: selectedItems,
-                    quantity: selectedItems.reduce((sum, i) => sum + i.qty, 0),
-                    clientName: document.getElementById('custName').value.trim(),
-                    phone: document.getElementById('custPhone').value.trim(),
-                    address: document.getElementById('custAddress').value.trim(),
-                    price: totalAmount,
-                    deliveryFee: 20,
-                    status: 'pending_seller',
-                    createdAt: Date.now()
-                };
-
-                orders.unshift(newOrder);
-                await saveStoreData();
-
-                document.getElementById('success-modal').classList.remove('hidden');
-                customerOrderForm.reset();
-                renderStoreProducts();
             });
-        }
+
+            if (selectedItems.length === 0) {
+                alert('المرجو اختيار منتج واحد على الأقل');
+                return;
+            }
+
+            let summaryParts = selectedItems.map(i => {
+                const prod = colors.find(c => c.id === i.productId);
+                return `${prod ? prod.name : ''} (العدد: ${i.qty})`;
+            });
+
+            const newOrder = {
+                id: 'ORD_' + Date.now(),
+                productName: summaryParts.join(' + '),
+                items: selectedItems,
+                quantity: selectedItems.reduce((sum, i) => sum + i.qty, 0),
+                clientName: document.getElementById('custName').value.trim(),
+                phone: document.getElementById('custPhone').value.trim(),
+                address: document.getElementById('custAddress').value.trim(),
+                price: totalAmount,
+                deliveryFee: 20,
+                status: 'pending_seller',
+                createdAt: Date.now()
+            };
+
+            orders.unshift(newOrder);
+            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors } });
+
+            document.getElementById('success-modal').classList.remove('hidden');
+            document.getElementById('customerOrderForm').reset();
+            renderStoreProducts();
+        });
 
         function closeSuccessModal() {
             document.getElementById('success-modal').classList.add('hidden');
