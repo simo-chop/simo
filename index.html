@@ -107,33 +107,12 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-7 rounded-3xl shadow-xl border border-slate-800">
-                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="netProfitTotal">المجموع الصافي الإجمالي</span>
-                        <div id="box-net-total" class="text-3xl font-black text-emerald-400 mt-2">0.00 د.م</div>
-                    </div>
-                    <span class="text-[11px] text-slate-400 mt-4" data-i18n="netProfitSub">مجموع الطلبات المسلمة ناقص مصاريف التوصيل</span>
-                </div>
-                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider" data-i18n="courierDebtTitle">المال المتبقي عند اللفرور</span>
-                        <div id="box-courier-debt" class="text-3xl font-black text-rose-400 mt-2">0.00 د.م</div>
-                    </div>
-                    <button onclick="settleCourierDebt()" class="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition-smooth active:scale-95 text-center shadow-md flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-wallet"></i> <span data-i18n="settleBtn">استلمت المال (تصفير الحساب)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- قسم طلبات الزبائن الواردة من المتجر (بانتظار التأكيد) -->
+            <!-- قسم طلبات الزبائن الواردة من المتجر -->
             <div class="glass-panel p-6 rounded-3xl border border-amber-500/30">
                 <h2 class="text-sm font-extrabold text-amber-400 mb-4 flex items-center gap-2.5">
                     <span class="bg-amber-500/20 text-amber-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-store"></i></span> <span data-i18n="customerOrdersTitle">طلبات الزبائن الواردة من المتجر (بانتظار التأكيد)</span>
                 </h2>
-                <div id="customerOrdersList" class="space-y-3.5">
-                    <!-- يتم تعبئتها ديناميكياً -->
-                </div>
+                <div id="customerOrdersList" class="space-y-3.5"></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -145,7 +124,7 @@
                         <form id="orderForm" class="space-y-4">
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-xs font-bold text-slate-300">المنتجات والألوان والكميات *</label>
+                                    <label class="block text-xs font-bold text-slate-300">المنتجات والكميات *</label>
                                     <button type="button" onclick="addOrderItemRow()" class="text-[11px] text-indigo-400 hover:text-indigo-300 font-bold bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/30">
                                         <i class="fa-solid fa-plus"></i> إضافة منتج آخر
                                     </button>
@@ -207,6 +186,7 @@
             </div>
         </section>
 
+        <!-- إدارة المخزون والمنتجات والفئات -->
         <section id="seller-tab-inventory" class="space-y-4 hidden">
             <div class="flex flex-wrap items-center justify-between gap-3 glass-panel p-5 rounded-3xl">
                 <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
@@ -225,43 +205,6 @@
         </section>
     </main>
 
-    <!-- نافذة تعديل طلب -->
-    <div id="edit-order-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-sm font-extrabold text-white" data-i18n="editOrderTitle">✏️ تعديل تفاصيل الطلب</h3>
-                <button onclick="closeEditOrderModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
-            </div>
-            <div class="space-y-3.5 text-xs">
-                <input type="hidden" id="edit-order-id">
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">المنتج والكمية</label>
-                    <input id="edit-order-product-text" type="text" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="phoneNumber">رقم الهاتف *</label>
-                    <input id="edit-order-phone" type="tel" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white text-right" dir="ltr">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="address">العنوان *</label>
-                    <textarea id="edit-order-address" rows="2" class="w-full px-3.5 py-2.5 border border-slate-700 rounded-xl font-semibold bg-slate-800 text-white"></textarea>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="price">الثمن الإجمالي</label>
-                    <input id="edit-order-price" type="number" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="deliveryFee">مصاريف التوصيل</label>
-                    <input id="edit-order-delivery-fee" type="number" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                </div>
-            </div>
-            <div class="flex gap-2.5 pt-2">
-                <button onclick="saveEditedOrder()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-smooth" data-i18n="saveBtn">حفظ التعديلات</button>
-                <button onclick="closeEditOrderModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth" data-i18n="cancelBtn">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
     <!-- نافذة تعديل المنتج -->
     <div id="price-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
@@ -275,12 +218,19 @@
                     <input id="edit-name-input" type="text" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
+                    <label class="block font-bold text-slate-300 mb-1">الفئة (Category):</label>
+                    <select id="edit-category-input" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                        <option value="parasols">المظلات (Parasols)</option>
+                        <option value="controllers">المانيطات (Controllers)</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block font-bold text-slate-300 mb-1" data-i18n="sellingPrice">سعر الوحدة</label>
                     <input id="edit-price-input" type="number" step="0.5" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="imageUrl">رابط صورة المنتج (URL):</label>
-                    <input id="edit-img-input" type="url" placeholder="https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
+                    <label class="block font-bold text-slate-300 mb-1" data-i18n="imageUrl">رابط صورة المنتج (URL أو اسم الصورة):</label>
+                    <input id="edit-img-input" type="text" placeholder="beige.jpg أو https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
                 </div>
             </div>
             <div class="flex gap-2.5 pt-2">
@@ -290,7 +240,7 @@
         </div>
     </div>
 
-    <!-- نافذة منتج جديد -->
+    <!-- نافذة إضافة منتج جديد -->
     <div id="new-product-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -303,7 +253,14 @@
                     <input id="new-prod-name" type="text" placeholder="مثال: مظلة جديدة" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="sellingPrice">سعر الوحدة الافتراضي *:</label>
+                    <label class="block font-bold text-slate-300 mb-1">اختر الفئة (Category) *:</label>
+                    <select id="new-prod-category" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                        <option value="parasols">المظلات (Parasols)</option>
+                        <option value="controllers">المانيطات (Controllers)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1" data-i18n="sellingPrice">سعر الوحدة *:</label>
                     <input id="new-prod-price" type="number" value="130" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
@@ -311,8 +268,8 @@
                     <input id="new-prod-stock" type="number" value="10" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-300 mb-1" data-i18n="imageUrl">رابط صورة المنتج (URL):</label>
-                    <input id="new-prod-img" type="url" placeholder="https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
+                    <label class="block font-bold text-slate-300 mb-1" data-i18n="imageUrl">رابط صورة المنتج (URL أو اسم الصورة):</label>
+                    <input id="new-prod-img" type="text" placeholder="https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
                 </div>
             </div>
             <div class="flex gap-2.5 pt-2">
@@ -381,7 +338,6 @@
                 addProductBtn: "إضافة منتج جديد",
                 addStockBtn: "إضافة شحنة واردة",
                 editProductTitle: "تعديل تفاصيل المنتج",
-                editOrderTitle: "تعديل تفاصيل الطلب",
                 productName: "اسم المنتج:",
                 sellingPrice: "سعر الوحدة",
                 imageUrl: "رابط صورة المنتج (URL):",
@@ -398,9 +354,6 @@
                 units: "قطعة",
                 currency: "د.م",
                 deliveryLabel: "التوصيل:",
-                refusalReasonLabel: "سبب الرفض:",
-                scheduledDateLabel: "موعد التسليم:",
-                returnBtn: "إعادة",
                 customerOrdersTitle: "طلبات الزبائن الواردة من المتجر (بانتظار التأكيد)",
                 newCustomerOrdersAlert: "لديك طلبات جديدة من الزبائن بانتظار التأكيد!",
                 newCustomerOrdersSub: "قم بمراجعتها وتأكيدها لتنتقل للفرور.",
@@ -435,7 +388,6 @@
                 addProductBtn: "Nouveau Produit",
                 addStockBtn: "Ajouter du Stock",
                 editProductTitle: "Modifier le produit",
-                editOrderTitle: "Modifier la commande",
                 productName: "Nom du produit:",
                 sellingPrice: "Prix unitaire",
                 imageUrl: "Lien de l'image (URL):",
@@ -452,14 +404,11 @@
                 units: "unités",
                 currency: "DH",
                 deliveryLabel: "Livraison:",
-                refusalReasonLabel: "Motif du refus:",
-                scheduledDateLabel: "Date de livraison:",
-                returnBtn: "Retour",
-                customerOrdersTitle: "Commandes clients (En attente de confirmation)",
-                newCustomerOrdersAlert: "Nouvelles commandes en attente de confirmation !",
-                newCustomerOrdersSub: "Examinez et confirmez-les pour les envoyer au livreur.",
+                customerOrdersTitle: "Commandes clients (En attente)",
+                newCustomerOrdersAlert: "Nouvelles commandes en attente !",
+                newCustomerOrdersSub: "Examinez et confirmez-les.",
                 confirmAndSendToCourier: "Confirmer & Envoyer",
-                noCustomerOrders: "Aucune nouvelle commande client"
+                noCustomerOrders: "Aucune nouvelle commande"
             },
             en: {
                 storeTitle: "Seller Dashboard",
@@ -489,7 +438,6 @@
                 addProductBtn: "Add New Product",
                 addStockBtn: "Add Incoming Stock",
                 editProductTitle: "Edit Product Details",
-                editOrderTitle: "Edit Order Details",
                 productName: "Product Name:",
                 sellingPrice: "Unit Price",
                 imageUrl: "Product Image URL:",
@@ -506,14 +454,11 @@
                 units: "units",
                 currency: "DH",
                 deliveryLabel: "Delivery:",
-                refusalReasonLabel: "Refusal reason:",
-                scheduledDateLabel: "Delivery date:",
-                returnBtn: "Return",
-                customerOrdersTitle: "Customer Orders (Pending Confirmation)",
-                newCustomerOrdersAlert: "You have new customer orders pending confirmation!",
-                newCustomerOrdersSub: "Review and confirm them to send to courier.",
+                customerOrdersTitle: "Customer Orders (Pending)",
+                newCustomerOrdersAlert: "New customer orders pending!",
+                newCustomerOrdersSub: "Review and confirm them.",
                 confirmAndSendToCourier: "Confirm & Send",
-                noCustomerOrders: "No new customer orders currently"
+                noCustomerOrders: "No new customer orders"
             }
         };
 
@@ -561,12 +506,14 @@
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const DEFAULT_COLORS = [
-            { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg' },
-            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg' },
-            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg' },
-            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg' },
-            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg' },
-            { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg' }
+            { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
+            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
+            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
+            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
+            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
+            { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg', category: 'parasols' },
+            { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200', category: 'controllers' },
+            { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'https://images.unsplash.com/photo-1612287233306-604812a2a67e?w=200', category: 'controllers' }
         ];
 
         let orders = [];
@@ -617,11 +564,10 @@
         loadDataFromSupabase();
         changeLanguage(currentLang);
 
-        // دالة تأكيد طلب الزبون ونقله إلى صفحة اللفرور (قيد الانتظار)
         function confirmCustomerOrder(id) {
             const order = orders.find(o => o.id === id);
             if (order) {
-                order.status = 'pending'; // يصبح مرئياً للفرور
+                order.status = 'pending';
                 saveAllToSupabase();
                 renderCustomerOrders();
                 renderSellerOrders();
@@ -717,9 +663,7 @@
             let total = 0;
             currentOrderItems.forEach(item => {
                 const product = colors.find(c => c.id === item.productId);
-                if (product) {
-                    total += (product.price || 0) * (item.qty || 1);
-                }
+                if (product) total += (product.price || 0) * (item.qty || 1);
             });
             const priceInput = document.getElementById('orderPrice');
             if (priceInput) priceInput.value = total;
@@ -744,7 +688,7 @@
                     address: document.getElementById('clientAddress').value.trim(),
                     price: parseFloat(document.getElementById('orderPrice').value) || 0,
                     deliveryFee: parseFloat(document.getElementById('orderDeliveryFee').value) || 20,
-                    status: 'pending', // الطلبات المضافة من لوحة البائع تذهب مباشرة للفرور
+                    status: 'pending',
                     refusalReason: '',
                     scheduledDate: '',
                     scheduledTime: '',
@@ -810,46 +754,6 @@
             renderSellerOrders();
             renderCustomerOrders();
             updateSellerStats();
-        }
-
-        function openEditOrderModal(id) {
-            const order = orders.find(o => o.id === id);
-            if (!order) return;
-            document.getElementById('edit-order-id').value = order.id;
-            document.getElementById('edit-order-product-text').value = order.productName || '';
-            document.getElementById('edit-order-phone').value = order.phone;
-            document.getElementById('edit-order-address').value = order.address;
-            document.getElementById('edit-order-price').value = order.price;
-            document.getElementById('edit-order-delivery-fee').value = order.deliveryFee !== undefined ? order.deliveryFee : 20;
-            document.getElementById('edit-order-modal').classList.remove('hidden');
-        }
-        function closeEditOrderModal() { document.getElementById('edit-order-modal').classList.add('hidden'); }
-        function saveEditedOrder() {
-            const id = document.getElementById('edit-order-id').value;
-            const order = orders.find(o => o.id === id);
-            if (!order) return;
-
-            order.productName = document.getElementById('edit-order-product-text').value.trim();
-            order.phone = document.getElementById('edit-order-phone').value.trim();
-            order.address = document.getElementById('edit-order-address').value.trim();
-            order.price = parseFloat(document.getElementById('edit-order-price').value) || order.price;
-            order.deliveryFee = parseFloat(document.getElementById('edit-order-delivery-fee').value) || 20;
-
-            closeEditOrderModal();
-            saveAllToSupabase();
-            renderSellerOrders();
-            renderCustomerOrders();
-        }
-
-        function returnToCourier(id) {
-            const idx = orders.findIndex(o => o.id === id);
-            if (idx !== -1) {
-                orders[idx].status = 'pending';
-                orders[idx].courierName = '';
-                saveAllToSupabase();
-                renderSellerOrders();
-                updateSellerStats();
-            }
         }
 
         function getCourierUrl() {
@@ -938,7 +842,6 @@
                             </p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="openEditOrderModal('${order.id}')" class="text-slate-400 hover:text-indigo-400 transition-smooth p-1.5 text-xs bg-slate-800 rounded-lg" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button onclick="deleteOrder('${order.id}')" class="text-slate-400 hover:text-rose-400 transition-smooth p-1.5 text-xs bg-slate-800 rounded-lg" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
@@ -951,6 +854,7 @@
             }).join('');
         }
 
+        // إدارة المخزون وعرض الفئات وتعديل المنتجات وإضافتها بالكامل
         function renderInventoryList() {
             const list = document.getElementById('inventory-list');
             if (!list) return;
@@ -960,12 +864,14 @@
                         <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-12 h-12 rounded-xl object-cover shadow-xs border border-slate-700 flex-shrink-0" alt="صورة المنتج">
                         <div>
                             <div class="font-extrabold text-white text-sm">${item.name}</div>
+                            <div class="text-[10px] text-indigo-400 font-bold uppercase mt-0.5">الفئة: ${item.category === 'controllers' ? 'مانيطات' : 'مظلات'}</div>
                             <div class="text-[11px] text-slate-400 font-semibold mt-0.5">${item.price} ${translations[currentLang].currency}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2.5">
-                        <div class="font-extrabold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-xl">${item.stock} ${translations[currentLang].units}</div>
+                        <div class="font-extrabold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-xl">${item.stock} قطع</div>
                         <button onclick="openPriceModal('${item.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-1.5 rounded-xl font-bold transition-smooth">تعديل</button>
+                        <button onclick="deleteProduct('${item.id}')" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 px-2.5 py-1.5 rounded-xl transition-smooth"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -975,6 +881,7 @@
             editingColorId = id;
             const item = colors.find(c => c.id === id);
             document.getElementById('edit-name-input').value = item.name;
+            document.getElementById('edit-category-input').value = item.category || 'parasols';
             document.getElementById('edit-price-input').value = item.price;
             document.getElementById('edit-img-input').value = item.img || '';
             document.getElementById('price-modal').classList.remove('hidden');
@@ -983,6 +890,7 @@
         function savePriceChanges() {
             const item = colors.find(c => c.id === editingColorId);
             item.name = document.getElementById('edit-name-input').value.trim() || item.name;
+            item.category = document.getElementById('edit-category-input').value;
             item.price = parseFloat(document.getElementById('edit-price-input').value) || 0;
             item.img = document.getElementById('edit-img-input').value.trim() || item.img;
             closePriceModal();
@@ -991,8 +899,17 @@
             renderOrderItems();
         }
 
+        function deleteProduct(id) {
+            if (!confirm('هل تريد حذف هذا المنتج نهائياً؟')) return;
+            colors = colors.filter(c => c.id !== id);
+            saveAllToSupabase();
+            renderInventoryList();
+            renderOrderItems();
+        }
+
         function openNewProductModal() {
             document.getElementById('new-prod-name').value = '';
+            document.getElementById('new-prod-category').value = 'parasols';
             document.getElementById('new-prod-price').value = '130';
             document.getElementById('new-prod-stock').value = '10';
             document.getElementById('new-prod-img').value = '';
@@ -1001,6 +918,7 @@
         function closeNewProductModal() { document.getElementById('new-product-modal').classList.add('hidden'); }
         function handleNewProductSubmit() {
             const name = document.getElementById('new-prod-name').value.trim();
+            const category = document.getElementById('new-prod-category').value;
             const price = parseFloat(document.getElementById('new-prod-price').value) || 0;
             const stock = parseInt(document.getElementById('new-prod-stock').value) || 0;
             const img = document.getElementById('new-prod-img').value.trim() || 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';
@@ -1008,7 +926,7 @@
             if (!name) { alert('المرجو إدخال اسم المنتج'); return; }
 
             const newId = 'prod_' + Date.now();
-            colors.push({ id: newId, name, stock, price, img });
+            colors.push({ id: newId, name, stock, price, img, category });
             closeNewProductModal();
             saveAllToSupabase();
             renderInventoryList();
