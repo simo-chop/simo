@@ -530,16 +530,22 @@
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || DEFAULT_COLORS;
                     courierDebt = data.payload.courierDebt || 0;
-                    if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
-                        currentOrderItems[0].productId = colors[0].id;
-                    }
-                    renderOrderItems();
-                    renderSellerOrders();
-                    renderCustomerOrders();
-                    renderInventoryList();
-                    updateSellerStats();
                 }
             } catch (e) {}
+
+            if (!colors || colors.length === 0) {
+                colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            }
+
+            if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
+                currentOrderItems[0].productId = colors[0].id;
+            }
+
+            renderOrderItems();
+            renderSellerOrders();
+            renderCustomerOrders();
+            renderInventoryList();
+            updateSellerStats();
         }
 
         async function saveAllToSupabase() {
@@ -717,11 +723,15 @@
 
         function switchSellerTab(tab) {
             ['delivery', 'inventory'].forEach(t => {
-                document.getElementById(`seller-tab-${t}`).classList.add('hidden');
-                document.getElementById(`stab-${t}`).className = 'flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2';
+                const el = document.getElementById(`seller-tab-${t}`);
+                const btn = document.getElementById(`stab-${t}`);
+                if (el) el.classList.toggle('hidden', t !== tab);
+                if (btn) {
+                    btn.className = t === tab ? 
+                        'flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm flex items-center justify-center gap-2' : 
+                        'flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2';
+                }
             });
-            document.getElementById(`seller-tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`stab-${tab}`).className = 'flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm flex items-center justify-center gap-2';
         }
 
         function setFilter(f) {
@@ -791,22 +801,23 @@
 
             let totalNetProfit = deliveredOrders.reduce((sum, o) => sum + (Number(o.price) - Number(o.deliveryFee || 20)), 0);
 
-            document.getElementById('statPending').textContent = pendingCount;
-            document.getElementById('statScheduled').textContent = scheduledCount;
-            document.getElementById('statDelivered').textContent = deliveredOrders.length;
-            document.getElementById('statRefused').textContent = refusedCount;
+            if(document.getElementById('statPending')) document.getElementById('statPending').textContent = pendingCount;
+            if(document.getElementById('statScheduled')) document.getElementById('statScheduled').textContent = scheduledCount;
+            if(document.getElementById('statDelivered')) document.getElementById('statDelivered').textContent = deliveredOrders.length;
+            if(document.getElementById('statRefused')) document.getElementById('statRefused').textContent = refusedCount;
             
-            document.getElementById('statRevenue').textContent = dailyRevenue.toLocaleString();
-            document.getElementById('statNetRevenue').textContent = (dailyRevenue - dailyDeliveryFees).toLocaleString();
-            document.getElementById('statDeliveryFees').textContent = dailyDeliveryFees.toLocaleString();
+            if(document.getElementById('statRevenue')) document.getElementById('statRevenue').textContent = dailyRevenue.toLocaleString();
+            if(document.getElementById('statNetRevenue')) document.getElementById('statNetRevenue').textContent = (dailyRevenue - dailyDeliveryFees).toLocaleString();
+            if(document.getElementById('statDeliveryFees')) document.getElementById('statDeliveryFees').textContent = dailyDeliveryFees.toLocaleString();
 
-            document.getElementById('box-net-total').innerHTML = `${totalNetProfit.toFixed(2)} <span class="currencyUnit">${translations[currentLang].currency}</span>`;
-            document.getElementById('box-courier-debt').innerHTML = `${courierRemainingMoney.toFixed(2)} <span class="currencyUnit">${translations[currentLang].currency}</span>`;
+            if(document.getElementById('box-net-total')) document.getElementById('box-net-total').innerHTML = `${totalNetProfit.toFixed(2)} <span class="currencyUnit">${translations[currentLang].currency}</span>`;
+            if(document.getElementById('box-courier-debt')) document.getElementById('box-courier-debt').innerHTML = `${courierRemainingMoney.toFixed(2)} <span class="currencyUnit">${translations[currentLang].currency}</span>`;
         }
 
         function renderSellerOrders() {
             updateSellerStats();
             const container = document.getElementById('sellerOrdersList');
+            if(!container) return;
             const filtered = orders.filter(o => o.status === currentFilter);
 
             if (filtered.length === 0) {
@@ -854,10 +865,12 @@
             }).join('');
         }
 
-        // إدارة المخزون وعرض الفئات وتعديل المنتجات وإضافتها بالكامل
         function renderInventoryList() {
             const list = document.getElementById('inventory-list');
             if (!list) return;
+            if (!colors || colors.length === 0) {
+                colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            }
             list.innerHTML = colors.map(item => `
                 <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-md transition-smooth text-xs">
                     <div class="flex items-center gap-3">
@@ -880,6 +893,7 @@
         function openPriceModal(id) {
             editingColorId = id;
             const item = colors.find(c => c.id === id);
+            if(!item) return;
             document.getElementById('edit-name-input').value = item.name;
             document.getElementById('edit-category-input').value = item.category || 'parasols';
             document.getElementById('edit-price-input').value = item.price;
@@ -889,6 +903,7 @@
         function closePriceModal() { document.getElementById('price-modal').classList.add('hidden'); }
         function savePriceChanges() {
             const item = colors.find(c => c.id === editingColorId);
+            if(!item) return;
             item.name = document.getElementById('edit-name-input').value.trim() || item.name;
             item.category = document.getElementById('edit-category-input').value;
             item.price = parseFloat(document.getElementById('edit-price-input').value) || 0;
