@@ -43,11 +43,16 @@
         </div>
 
         <div class="max-w-6xl mx-auto px-4 pb-3.5 flex justify-between items-center gap-3 border-t border-slate-800/60 pt-3">
-            <button onclick="copyCourierLink()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 shadow-xs transition-smooth flex items-center gap-2">
-                <i class="fa-solid fa-link"></i> <span data-i18n="copyLink">نسخ الرابط</span>
-            </button>
-            <button onclick="openCourierPage()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-4 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-2">
-                <i class="fa-solid fa-motorcycle"></i> <span data-i18n="courierPage">صفحة اللفرور</span>
+            <div class="flex items-center gap-2">
+                <button onclick="openStorePage()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-2">
+                    <i class="fa-solid fa-store"></i> <span>عرض المتجر</span>
+                </button>
+                <button onclick="openCourierPage()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-2">
+                    <i class="fa-solid fa-motorcycle"></i> <span data-i18n="courierPage">صفحة اللفرور</span>
+                </button>
+            </div>
+            <button onclick="copyCourierLink()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 shadow-xs transition-smooth flex items-center gap-2">
+                <i class="fa-solid fa-link"></i> <span data-i18n="copyLink">نسخ رابط اللفرور</span>
             </button>
         </div>
     </header>
@@ -96,7 +101,6 @@
                     <p class="text-[11px] text-slate-400 font-bold" data-i18n="refused">رفض الإستلام</p>
                     <p class="text-2xl font-black text-rose-400 mt-1" id="statRefused">0</p>
                 </div>
-                <!-- الخانة المعدلة: المال المتبقي عند اللفرور مع زر تصفير -->
                 <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-indigo-500 relative">
                     <div class="flex justify-between items-start">
                         <p class="text-[11px] text-slate-400 font-bold">مال اللفرور</p>
@@ -608,6 +612,14 @@
             }
         }
 
+        function getStoreUrl() {
+            const loc = window.location;
+            const baseUrl = loc.protocol + "//" + loc.host + loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+            return `${baseUrl}store.html`;
+        }
+
+        function openStorePage() { window.open(getStoreUrl(), '_blank'); }
+
         function updateCategorySelects() {
             const selects = [document.getElementById('edit-category-input'), document.getElementById('new-prod-category')];
             selects.forEach(sel => {
@@ -1014,7 +1026,6 @@
             item.category = document.getElementById('edit-category-input').value;
             item.price = parseFloat(document.getElementById('edit-price-input').value) || 0;
             item.img = document.getElementById('edit-img-input').value.trim() || item.img;
-            closePriceManagerModal(); // fixed reference
             closePriceModal();
             saveAllToSupabase();
             renderInventoryList();
