@@ -45,29 +45,16 @@
             </div>
         </div>
 
-        <!-- اختيار الفئات -->
+        <!-- اختيار الفئات ديناميكياً -->
         <div class="space-y-4">
             <h3 class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">اختر الفئة</h3>
-            <div class="grid grid-cols-2 gap-3.5">
-                <button onclick="selectCategory('parasols')" id="cat-btn-parasols" 
-                    class="glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
-                        <i class="fa-solid fa-umbrella"></i>
-                    </div>
-                    <span class="font-black text-xs text-white">المظلات</span>
-                </button>
-                <button onclick="selectCategory('controllers')" id="cat-btn-controllers" 
-                    class="glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group">
-                    <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
-                        <i class="fa-solid fa-gamepad"></i>
-                    </div>
-                    <span class="font-black text-xs text-white">المانيطات</span>
-                </button>
+            <div id="store-categories-container" class="grid grid-cols-2 gap-3.5">
+                <!-- يتم تعبئتها تلقائياً -->
             </div>
         </div>
 
         <div class="space-y-4 pt-2">
-            <h3 id="currentCategoryTitle" class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">المظلات المتوفرة</h3>
+            <h3 id="currentCategoryTitle" class="text-xs font-black text-slate-300 uppercase tracking-wider px-1">المنتجات المتوفرة</h3>
             <div id="store-products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
         </div>
 
@@ -129,6 +116,11 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const DEFAULT_CATEGORIES = [
+            { id: 'parasols', nameAr: 'المظلات', nameFr: 'Parasols' },
+            { id: 'controllers', nameAr: 'المانيطات', nameFr: 'Manettes' }
+        ];
+
         const DEFAULT_COLORS = [
             { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
             { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg', category: 'parasols' },
@@ -136,11 +128,12 @@
             { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
             { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
             { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
-            { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200', category: 'controllers' },
-            { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'https://images.unsplash.com/photo-1612287233306-604812a2a67e?w=200', category: 'controllers' }
+            { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'black.jpg', category: 'controllers' },
+            { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'blue.jpg', category: 'controllers' }
         ];
 
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+        let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         let orders = [];
         let selectedCategory = 'parasols';
 
@@ -150,19 +143,61 @@
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || DEFAULT_COLORS;
+                    categories = data.payload.categories || DEFAULT_CATEGORIES;
                 }
             } catch (e) {}
+
+            if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+
+            // تنظيف الصور لضمان عدم وجود روابط طويلة معطلة
+            colors.forEach(item => {
+                if (!item.img || item.img.startsWith('http') || item.img.length > 35) {
+                    let nameLower = (item.name || '').toLowerCase();
+                    if (item.id === 'beige' || nameLower.includes('بيج')) item.img = 'beige.jpg';
+                    else if (item.id === 'blue' || nameLower.includes('أزرق')) item.img = 'blue.jpg';
+                    else if (item.id === 'green' || nameLower.includes('أخضر')) item.img = 'green.jpg';
+                    else if (item.id === 'gray' || nameLower.includes('رمادي')) item.img = 'gray.jpg';
+                    else if (item.id === 'pink' || nameLower.includes('وردي')) item.img = 'pink.jpg';
+                    else item.img = 'black.jpg';
+                }
+            });
+
+            if (!categories.some(c => c.id === selectedCategory)) {
+                selectedCategory = categories[0].id;
+            }
+
+            renderCategoriesSelector();
             renderStoreProducts();
         }
 
         loadStoreData();
 
+        function renderCategoriesSelector() {
+            const container = document.getElementById('store-categories-container');
+            if (!container) return;
+
+            container.innerHTML = categories.map(cat => {
+                const isSelected = cat.id === selectedCategory;
+                const borderClass = isSelected ? 'border-indigo-500 opacity-100' : 'border-slate-800 opacity-70 hover:opacity-100';
+                const icon = cat.id === 'controllers' ? 'fa-gamepad' : 'fa-umbrella';
+
+                return `
+                <button onclick="selectCategory('${cat.id}')" id="cat-btn-${cat.id}" 
+                    class="glass-card p-5 rounded-2xl border-2 ${borderClass} text-center transition-smooth flex flex-col items-center gap-2 group">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl group-hover:scale-110 transition-smooth">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>
+                    <span class="font-black text-xs text-white">${cat.nameAr}</span>
+                </button>`;
+            }).join('');
+        }
+
         function selectCategory(cat) {
             selectedCategory = cat;
-            document.getElementById('cat-btn-parasols').className = cat === 'parasols' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
-            document.getElementById('cat-btn-controllers').className = cat === 'controllers' ? 'glass-card p-5 rounded-2xl border-2 border-indigo-500 text-center transition-smooth flex flex-col items-center gap-2 group' : 'glass-card p-5 rounded-2xl border-2 border-slate-800 text-center transition-smooth flex flex-col items-center gap-2 group opacity-60';
-            
-            document.getElementById('currentCategoryTitle').textContent = cat === 'parasols' ? 'المظلات المتوفرة' : 'المانيطات المتوفرة';
+            renderCategoriesSelector();
+            const catObj = categories.find(c => c.id === cat);
+            document.getElementById('currentCategoryTitle').textContent = catObj ? `${catObj.nameAr} المتوفرة` : 'المنتجات المتوفرة';
             renderStoreProducts();
         }
 
@@ -179,7 +214,7 @@
                 return `
                 <div class="glass-card p-4 rounded-2xl flex items-center justify-between gap-4 transition-smooth hover:border-indigo-500/40">
                     <div class="flex items-center gap-3.5">
-                        <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة المنتج">
+                        <img src="${item.img}" onerror="this.src='black.jpg'" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md flex-shrink-0" alt="صورة">
                         <div>
                             <h4 class="font-black text-white text-xs sm:text-sm">${item.name}</h4>
                             <p class="text-xs text-indigo-400 font-extrabold mt-1">${item.price} د.م</p>
@@ -264,7 +299,7 @@
             };
 
             orders.unshift(newOrder);
-            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors } });
+            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors, categories } });
 
             document.getElementById('success-modal').classList.remove('hidden');
             document.getElementById('customerOrderForm').reset();
