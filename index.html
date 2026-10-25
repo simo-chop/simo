@@ -96,9 +96,13 @@
                     <p class="text-[11px] text-slate-400 font-bold" data-i18n="refused">رفض الإستلام</p>
                     <p class="text-2xl font-black text-rose-400 mt-1" id="statRefused">0</p>
                 </div>
-                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-indigo-500">
-                    <p class="text-[11px] text-slate-400 font-bold" data-i18n="dailyRevenue">المحصل اليومي</p>
-                    <p class="text-xl font-black text-indigo-300 mt-1"><span id="statRevenue">0</span> <span class="text-xs currencyUnit">د.م</span></p>
+                <!-- الخانة المعدلة: المال المتبقي عند اللفرور مع زر تصفير -->
+                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-indigo-500 relative">
+                    <div class="flex justify-between items-start">
+                        <p class="text-[11px] text-slate-400 font-bold">مال اللفرور</p>
+                        <button onclick="settleCourierDebt()" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-emerald-500/30 transition-smooth">تصفير</button>
+                    </div>
+                    <p class="text-lg font-black text-indigo-300 mt-1"><span id="statRevenue">0</span> <span class="text-xs currencyUnit">د.م</span></p>
                 </div>
                 <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-teal-500 bg-teal-950/20">
                     <p class="text-[11px] text-teal-300 font-bold" data-i18n="netTotalStat">المجموع الصافي</p>
@@ -230,9 +234,7 @@
             <!-- قائمة الفئات الحالية للتعديل أو الحذف -->
             <div class="space-y-3">
                 <h4 class="text-xs font-black text-slate-300">الفئات الحالية الموجودة:</h4>
-                <div id="categories-list-container" class="space-y-2.5">
-                    <!-- تعبئة ديناميكية -->
-                </div>
+                <div id="categories-list-container" class="space-y-2.5"></div>
             </div>
 
             <button onclick="closeCategoryManagerModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth">إغلاق</button>
@@ -348,12 +350,9 @@
                 scheduled: "مجدول",
                 delivered: "تم الإستلام",
                 refused: "رفض الإستلام",
-                dailyRevenue: "المحصل اليومي",
                 netTotalStat: "المجموع الصافي",
                 netProfitTotal: "المجموع الصافي الإجمالي",
                 netProfitSub: "مجموع الطلبات المسلمة ناقص مصاريف التوصيل",
-                courierDebtTitle: "المال المتبقي عند اللفرور",
-                settleBtn: "استلمت المال (تصفير الحساب)",
                 addNewOrder: "إضافة طلب جديد",
                 phoneNumber: "رقم الهاتف *",
                 address: "العنوان *",
@@ -398,12 +397,9 @@
                 scheduled: "Planifié",
                 delivered: "Livré",
                 refused: "Refusé",
-                dailyRevenue: "Recette du jour",
                 netTotalStat: "Total Net",
                 netProfitTotal: "Bénéfice Net Global",
                 netProfitSub: "Total des commandes livrées moins les frais de livraison",
-                courierDebtTitle: "Argent chez le livreur",
-                settleBtn: "Argent reçu (Réinitialiser)",
                 addNewOrder: "Ajouter une commande",
                 phoneNumber: "Téléphone *",
                 address: "Adresse *",
@@ -448,12 +444,9 @@
                 scheduled: "Scheduled",
                 delivered: "Delivered",
                 refused: "Refused",
-                dailyRevenue: "Daily Revenue",
                 netTotalStat: "Net Total",
                 netProfitTotal: "Total Net Profit",
                 netProfitSub: "Total delivered orders minus delivery fees",
-                courierDebtTitle: "Money with Courier",
-                settleBtn: "Money Received (Reset)",
                 addNewOrder: "Add New Order",
                 phoneNumber: "Phone Number *",
                 address: "Address *",
@@ -606,6 +599,14 @@
 
         loadDataFromSupabase();
         changeLanguage(currentLang);
+
+        function settleCourierDebt() {
+            if (confirm('هل أنت متأكد من تصفير حساب المال المتبقي عند اللفرور؟')) {
+                localStorage.setItem(`SETTLED_TIME_simo_tanger`, Date.now().toString());
+                renderSellerOrders();
+                updateSellerStats();
+            }
+        }
 
         function updateCategorySelects() {
             const selects = [document.getElementById('edit-category-input'), document.getElementById('new-prod-category')];
@@ -820,14 +821,6 @@
             });
         }
 
-        function settleCourierDebt() {
-            if (confirm(translations[currentLang].settleBtn + '?')) {
-                localStorage.setItem(`SETTLED_TIME_simo_tanger`, Date.now().toString());
-                renderSellerOrders();
-                updateSellerStats();
-            }
-        }
-
         function switchSellerTab(tab) {
             ['delivery', 'inventory'].forEach(t => {
                 const el = document.getElementById(`seller-tab-${t}`);
@@ -890,16 +883,7 @@
             const deliveredOrders = orders.filter(o => o.status === 'delivered');
             const refusedCount = orders.filter(o => o.status === 'refused').length;
 
-            const todayStr = new Date().toDateString();
             const settledTime = parseInt(localStorage.getItem(`SETTLED_TIME_simo_tanger`) || '0');
-
-            const deliveredToday = deliveredOrders.filter(o => {
-                const oDate = o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '';
-                return oDate === todayStr;
-            });
-
-            const dailyRevenue = deliveredToday.reduce((sum, o) => sum + Number(o.price), 0);
-            const dailyDeliveryFees = deliveredToday.reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
             
             const unsettledToday = deliveredOrders.filter(o => (o.deliveredAt || 0) > settledTime);
             const unsettledRevenue = unsettledToday.reduce((sum, o) => sum + Number(o.price), 0);
@@ -913,7 +897,18 @@
             if(document.getElementById('statDelivered')) document.getElementById('statDelivered').textContent = deliveredOrders.length;
             if(document.getElementById('statRefused')) document.getElementById('statRefused').textContent = refusedCount;
             
-            if(document.getElementById('statRevenue')) document.getElementById('statRevenue').textContent = dailyRevenue.toLocaleString();
+            if(document.getElementById('statRevenue')) document.getElementById('statRevenue').textContent = courierRemainingMoney.toLocaleString();
+
+            const dailyRevenue = deliveredOrders.filter(o => {
+                const oDate = o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '';
+                return oDate === new Date().toDateString();
+            }).reduce((sum, o) => sum + Number(o.price), 0);
+
+            const dailyDeliveryFees = deliveredOrders.filter(o => {
+                const oDate = o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '';
+                return oDate === new Date().toDateString();
+            }).reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
+
             if(document.getElementById('statNetRevenue')) document.getElementById('statNetRevenue').textContent = (dailyRevenue - dailyDeliveryFees).toLocaleString();
             if(document.getElementById('statDeliveryFees')) document.getElementById('statDeliveryFees').textContent = dailyDeliveryFees.toLocaleString();
 
@@ -1019,6 +1014,7 @@
             item.category = document.getElementById('edit-category-input').value;
             item.price = parseFloat(document.getElementById('edit-price-input').value) || 0;
             item.img = document.getElementById('edit-img-input').value.trim() || item.img;
+            closePriceManagerModal(); // fixed reference
             closePriceModal();
             saveAllToSupabase();
             renderInventoryList();
