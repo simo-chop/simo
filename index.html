@@ -196,9 +196,6 @@
                     <i class="fa-solid fa-boxes-stacked text-indigo-400"></i> <span>إدارة المخزون والمنتجات</span>
                 </h2>
                 <div class="flex flex-wrap items-center gap-2.5">
-                    <button onclick="fixImagesDefault()" class="text-xs bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
-                        <i class="fa-solid fa-image"></i> <span>تحديث صور المنتجات افتراضياً</span>
-                    </button>
                     <button onclick="openCategoryManagerModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
                         <i class="fa-solid fa-folder-tree"></i> <span>إدارة وعرض الفئات</span>
                     </button>
@@ -375,20 +372,6 @@
             } catch (e) {}
 
             if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
-            
-            // تنظيف وتنظيم الصور تلقائياً لتبدأ بأسماء الصور الصحيحة المحلية وتتجنب الروابط الطويلة الخاطئة
-            colors.forEach(item => {
-                if (!item.img || item.img.startsWith('http') || item.img.length > 30) {
-                    if (item.id === 'black' || item.name.includes('أسود')) item.img = 'black.jpg';
-                    else if (item.id === 'beige' || item.name.includes('بيج')) item.img = 'beige.jpg';
-                    else if (item.id === 'blue' || item.name.includes('أزرق')) item.img = 'blue.jpg';
-                    else if (item.id === 'gray' || item.name.includes('رمادي')) item.img = 'gray.jpg';
-                    else if (item.id === 'green' || item.name.includes('أخضر')) item.img = 'green.jpg';
-                    else if (item.id === 'pink' || item.name.includes('وردي')) item.img = 'pink.jpg';
-                    else item.img = 'black.jpg';
-                }
-            });
-
             if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 
             if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
@@ -409,22 +392,6 @@
         }
 
         loadDataFromSupabase();
-
-        // زر لتنظيف وتحديث جميع روابط الصور افتراضياً وتصحيحها بضغطة واحدة
-        async function fixImagesDefault() {
-            colors.forEach(item => {
-                if (item.id === 'black' || item.name.includes('أسود')) item.img = 'black.jpg';
-                else if (item.id === 'beige' || item.name.includes('بيج')) item.img = 'beige.jpg';
-                else if (item.id === 'blue' || item.name.includes('أزرق')) item.img = 'blue.jpg';
-                else if (item.id === 'gray' || item.name.includes('رمادي')) item.img = 'gray.jpg';
-                else if (item.id === 'green' || item.name.includes('أخضر')) item.img = 'green.jpg';
-                else if (item.id === 'pink' || item.name.includes('وردي')) item.img = 'pink.jpg';
-                else if (!item.img || item.img.startsWith('http')) item.img = 'black.jpg';
-            });
-            await saveAllToSupabase();
-            renderInventoryList();
-            alert('تم تصحيح وتحديث جميع صور المنتجات بنجاح!');
-        }
 
         function settleCourierDebt() {
             if (confirm('هل أنت متأكد من تصفير حساب المال المتبقي عند اللفرور؟')) {
@@ -846,13 +813,17 @@
 
         function openRestockModal() {
             const select = document.getElementById('restock-color-select');
+            if(!select) return;
             select.innerHTML = colors.map(c => `<option value="${c.id}">${c.name} (المتوفر: ${c.stock})</option>`).join('');
             document.getElementById('stock-modal').classList.remove('hidden');
         }
         function closeRestockModal() { document.getElementById('stock-modal').classList.add('hidden'); }
         function handleRestockSubmit() {
-            const id = document.getElementById('restock-color-select'].value;
-            const qty = parseInt(document.getElementById('restock-qty-input').value) || 0;
+            const select = document.getElementById('restock-color-select');
+            const qtyInput = document.getElementById('restock-qty-input');
+            if(!select || !qtyInput) return;
+            const id = select.value;
+            const qty = parseInt(qtyInput.value) || 0;
             const item = colors.find(c => c.id === id);
             if(item) item.stock += qty;
             closeRestockModal();
