@@ -38,7 +38,7 @@
                 <div class="text-left">
                     <h1 class="text-sm font-black tracking-wide text-white" data-i18n="storeTitle">لوحة تحكم البائع</h1>
                 </div>
-                <img src="logo.png" alt="Simo Chop Logo" class="h-10 w-10 rounded-xl shadow-md object-cover flex-shrink-0 border border-slate-700">
+                <img src="logo.png" alt="Simo Chop Logo" class="h-10 w-10 rounded-xl shadow-md object-cover flex-shrink-0 border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
             </div>
         </div>
 
@@ -65,6 +65,20 @@
 
     <main class="max-w-6xl mx-auto px-4 mt-6">
         <section id="seller-tab-delivery" class="space-y-6">
+            
+            <!-- تنبيه الطلبات الجديدة من المتجر -->
+            <div id="pendingCustomerOrdersAlert" class="hidden bg-amber-500/10 border border-amber-500/30 p-4 rounded-3xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-black animate-pulse">
+                        <i class="fa-solid fa-bell"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-xs font-black text-amber-400" data-i18n="newCustomerOrdersAlert">لديك طلبات جديدة من الزبائن بانتظار التأكيد!</h3>
+                        <p class="text-[11px] text-slate-400" data-i18n="newCustomerOrdersSub">قم بمراجعتها وتأكيدها لتنتقل للفرور.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-amber-500">
                     <p class="text-[11px] text-slate-400 font-bold" data-i18n="pending">قيد الانتظار</p>
@@ -112,6 +126,16 @@
                 </div>
             </div>
 
+            <!-- قسم طلبات الزبائن الواردة من المتجر (بانتظار التأكيد) -->
+            <div class="glass-panel p-6 rounded-3xl border border-amber-500/30">
+                <h2 class="text-sm font-extrabold text-amber-400 mb-4 flex items-center gap-2.5">
+                    <span class="bg-amber-500/20 text-amber-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-store"></i></span> <span data-i18n="customerOrdersTitle">طلبات الزبائن الواردة من المتجر (بانتظار التأكيد)</span>
+                </h2>
+                <div id="customerOrdersList" class="space-y-3.5">
+                    <!-- يتم تعبئتها ديناميكياً -->
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-1">
                     <div class="glass-panel p-6 rounded-3xl sticky top-24">
@@ -119,7 +143,6 @@
                             <span class="bg-indigo-500/20 text-indigo-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-plus"></i></span> <span data-i18n="addNewOrder">إضافة طلب جديد</span>
                         </h2>
                         <form id="orderForm" class="space-y-4">
-                            
                             <div>
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="block text-xs font-bold text-slate-300">المنتجات والألوان والكميات *</label>
@@ -129,32 +152,26 @@
                                 </div>
                                 <div id="orderItemsContainer" class="space-y-2.5"></div>
                             </div>
-
-                            <div class="grid grid-cols-1 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="price">الثمن الإجمالي</label>
-                                    <input type="number" id="orderPrice" required placeholder="130"
-                                        class="w-full px-3.5 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-emerald-400 focus:outline-none">
-                                </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="price">الثمن الإجمالي</label>
+                                <input type="number" id="orderPrice" required placeholder="130"
+                                    class="w-full px-3.5 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-emerald-400 focus:outline-none">
                             </div>
-
                             <div>
                                 <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="phoneNumber">رقم الهاتف *</label>
                                 <input type="tel" id="clientPhone" required placeholder="06XXXXXXXX" dir="ltr"
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-smooth text-right">
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:outline-none text-right">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="address">العنوان *</label>
                                 <textarea id="clientAddress" required rows="2" placeholder="الحي، الشارع، رقم المنزل..."
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs bg-slate-900 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-smooth" data-i18n-placeholder="addressPlaceholder"></textarea>
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs bg-slate-900 text-white focus:outline-none" data-i18n-placeholder="addressPlaceholder"></textarea>
                             </div>
-                            
                             <div>
                                 <label class="block text-xs font-bold text-slate-300 mb-1.5" data-i18n="deliveryFee">مصاريف التوصيل</label>
                                 <input type="number" id="orderDeliveryFee" required value="20" placeholder="20"
                                     class="w-full px-3.5 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:outline-none">
                             </div>
-
                             <button type="submit" id="submitBtn"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-paper-plane"></i> <span data-i18n="sendToCourier">إرسال للفرور فوراً</span>
@@ -383,7 +400,12 @@
                 deliveryLabel: "التوصيل:",
                 refusalReasonLabel: "سبب الرفض:",
                 scheduledDateLabel: "موعد التسليم:",
-                returnBtn: "إعادة"
+                returnBtn: "إعادة",
+                customerOrdersTitle: "طلبات الزبائن الواردة من المتجر (بانتظار التأكيد)",
+                newCustomerOrdersAlert: "لديك طلبات جديدة من الزبائن بانتظار التأكيد!",
+                newCustomerOrdersSub: "قم بمراجعتها وتأكيدها لتنتقل للفرور.",
+                confirmAndSendToCourier: "تأكيد وإرسال للفرور",
+                noCustomerOrders: "لا توجد طلبات جديدة من الزبائن حالياً"
             },
             fr: {
                 storeTitle: "Tableau de bord Vendeur",
@@ -432,7 +454,12 @@
                 deliveryLabel: "Livraison:",
                 refusalReasonLabel: "Motif du refus:",
                 scheduledDateLabel: "Date de livraison:",
-                returnBtn: "Retour"
+                returnBtn: "Retour",
+                customerOrdersTitle: "Commandes clients (En attente de confirmation)",
+                newCustomerOrdersAlert: "Nouvelles commandes en attente de confirmation !",
+                newCustomerOrdersSub: "Examinez et confirmez-les pour les envoyer au livreur.",
+                confirmAndSendToCourier: "Confirmer & Envoyer",
+                noCustomerOrders: "Aucune nouvelle commande client"
             },
             en: {
                 storeTitle: "Seller Dashboard",
@@ -481,7 +508,12 @@
                 deliveryLabel: "Delivery:",
                 refusalReasonLabel: "Refusal reason:",
                 scheduledDateLabel: "Delivery date:",
-                returnBtn: "Return"
+                returnBtn: "Return",
+                customerOrdersTitle: "Customer Orders (Pending Confirmation)",
+                newCustomerOrdersAlert: "You have new customer orders pending confirmation!",
+                newCustomerOrdersSub: "Review and confirm them to send to courier.",
+                confirmAndSendToCourier: "Confirm & Send",
+                noCustomerOrders: "No new customer orders currently"
             }
         };
 
@@ -490,7 +522,6 @@
         function changeLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('APP_LANG', lang);
-            
             const htmlRoot = document.getElementById('htmlRoot');
             htmlRoot.setAttribute('lang', lang);
             htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
@@ -498,26 +529,18 @@
             ['ar', 'fr', 'en'].forEach(l => {
                 const btn = document.getElementById(`lang-${l}`);
                 if (btn) {
-                    if (l === lang) {
-                        btn.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg transition-smooth bg-indigo-600 text-white shadow-xs";
-                    } else {
-                        btn.className = "px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-400 hover:text-white";
-                    }
+                    btn.className = l === lang ? "px-2 py-0.5 text-[10px] font-bold rounded-lg transition-smooth bg-indigo-600 text-white shadow-xs" : "px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-400 hover:text-white";
                 }
             });
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) {
-                    el.textContent = translations[lang][key];
-                }
+                if (translations[lang][key]) el.textContent = translations[lang][key];
             });
 
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
-                if (translations[lang] && translations[lang][key]) {
-                    el.placeholder = translations[lang][key];
-                }
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
             });
 
             document.querySelectorAll('.currencyUnit').forEach(el => {
@@ -526,6 +549,7 @@
 
             renderOrderItems();
             renderSellerOrders();
+            renderCustomerOrders();
             renderInventoryList();
             updateSellerStats();
         }
@@ -557,25 +581,18 @@
                 const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
-                    colors = DEFAULT_COLORS;
+                    colors = data.payload.colors || DEFAULT_COLORS;
                     courierDebt = data.payload.courierDebt || 0;
                     if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
                         currentOrderItems[0].productId = colors[0].id;
                     }
                     renderOrderItems();
                     renderSellerOrders();
+                    renderCustomerOrders();
                     renderInventoryList();
                     updateSellerStats();
-                } else {
-                    colors = DEFAULT_COLORS;
-                    renderOrderItems();
-                    renderInventoryList();
                 }
-            } catch (e) {
-                colors = DEFAULT_COLORS;
-                renderOrderItems();
-                renderInventoryList();
-            }
+            } catch (e) {}
         }
 
         async function saveAllToSupabase() {
@@ -587,9 +604,10 @@
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
               if (payload.new && payload.new.payload) {
                   orders = payload.new.payload.orders || [];
-                  colors = DEFAULT_COLORS;
+                  colors = payload.new.payload.colors || DEFAULT_COLORS;
                   courierDebt = payload.new.payload.courierDebt || 0;
                   renderSellerOrders();
+                  renderCustomerOrders();
                   renderInventoryList();
                   updateSellerStats();
               }
@@ -598,6 +616,60 @@
 
         loadDataFromSupabase();
         changeLanguage(currentLang);
+
+        // دالة تأكيد طلب الزبون ونقله إلى صفحة اللفرور (قيد الانتظار)
+        function confirmCustomerOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = 'pending'; // يصبح مرئياً للفرور
+                saveAllToSupabase();
+                renderCustomerOrders();
+                renderSellerOrders();
+                updateSellerStats();
+            }
+        }
+
+        function renderCustomerOrders() {
+            const container = document.getElementById('customerOrdersList');
+            const alertBox = document.getElementById('pendingCustomerOrdersAlert');
+            if (!container) return;
+
+            const pendingCustOrders = orders.filter(o => o.status === 'pending_seller');
+
+            if (pendingCustOrders.length > 0) {
+                if (alertBox) alertBox.classList.remove('hidden');
+            } else {
+                if (alertBox) alertBox.classList.add('hidden');
+                container.innerHTML = `<div class="text-center py-6 text-slate-500 text-xs font-semibold">${translations[currentLang].noCustomerOrders}</div>`;
+                return;
+            }
+
+            container.innerHTML = pendingCustOrders.map(order => `
+                <div class="border border-amber-500/30 rounded-2xl p-4 bg-slate-900/90 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl">${order.clientName || 'زبون'}</span>
+                            <span class="text-xs text-slate-300 font-bold">${order.productName}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 flex items-center gap-1.5">
+                            <span class="text-rose-400">📍</span> ${order.address}
+                        </p>
+                        <a href="tel:${order.phone}" class="inline-block text-xs font-bold text-indigo-400 hover:underline" dir="ltr">📞 ${order.phone}</a>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                        <span class="font-black text-white bg-slate-800 px-3 py-2 rounded-xl text-xs">${order.price} ${translations[currentLang].currency}</span>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="confirmCustomerOrder('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-smooth flex items-center gap-1.5">
+                                <i class="fa-solid fa-check"></i> <span>${translations[currentLang].confirmAndSendToCourier}</span>
+                            </button>
+                            <button onclick="deleteOrder('${order.id}')" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 p-2.5 rounded-xl text-xs transition-smooth" title="حذف">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         function renderOrderItems() {
             const container = document.getElementById('orderItemsContainer');
@@ -657,28 +729,22 @@
         if (orderForm) {
             orderForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
                 let productSummaryParts = [];
                 currentOrderItems.forEach(item => {
                     const product = colors.find(c => c.id === item.productId);
-                    if (product) {
-                        productSummaryParts.push(`${product.name} (العدد: ${item.qty})`);
-                    }
+                    if (product) productSummaryParts.push(`${product.name} (العدد: ${item.qty})`);
                 });
-
-                const productNameCombined = productSummaryParts.join(' + ') || 'منتجات متعددة';
 
                 const newOrder = {
                     id: 'ORD_' + Date.now(),
-                    productId: currentOrderItems.length > 0 ? currentOrderItems[0].productId : '',
-                    productName: productNameCombined,
+                    productName: productSummaryParts.join(' + ') || 'منتجات متعددة',
                     items: JSON.parse(JSON.stringify(currentOrderItems)),
                     quantity: currentOrderItems.reduce((sum, i) => sum + i.qty, 0),
                     phone: document.getElementById('clientPhone').value.trim(),
                     address: document.getElementById('clientAddress').value.trim(),
                     price: parseFloat(document.getElementById('orderPrice').value) || 0,
                     deliveryFee: parseFloat(document.getElementById('orderDeliveryFee').value) || 20,
-                    status: 'pending',
+                    status: 'pending', // الطلبات المضافة من لوحة البائع تذهب مباشرة للفرور
                     refusalReason: '',
                     scheduledDate: '',
                     scheduledTime: '',
@@ -742,6 +808,7 @@
             orders = orders.filter(o => o.id !== id);
             saveAllToSupabase();
             renderSellerOrders();
+            renderCustomerOrders();
             updateSellerStats();
         }
 
@@ -756,9 +823,7 @@
             document.getElementById('edit-order-delivery-fee').value = order.deliveryFee !== undefined ? order.deliveryFee : 20;
             document.getElementById('edit-order-modal').classList.remove('hidden');
         }
-        function closeEditOrderModal() {
-            document.getElementById('edit-order-modal').classList.add('hidden');
-        }
+        function closeEditOrderModal() { document.getElementById('edit-order-modal').classList.add('hidden'); }
         function saveEditedOrder() {
             const id = document.getElementById('edit-order-id').value;
             const order = orders.find(o => o.id === id);
@@ -773,6 +838,7 @@
             closeEditOrderModal();
             saveAllToSupabase();
             renderSellerOrders();
+            renderCustomerOrders();
         }
 
         function returnToCourier(id) {
@@ -881,18 +947,6 @@
                         <span class="font-extrabold text-white bg-slate-800 px-2.5 py-1 rounded-lg">${order.price} ${translations[currentLang].currency}</span>
                     </div>
                     ${timeStr}
-                    ${order.status === 'refused' && order.refusalReason ? `
-                        <div class="mt-3 bg-rose-950/40 border border-rose-900/50 rounded-xl p-2.5 text-xs text-rose-300">
-                            <strong>${translations[currentLang].refusalReasonLabel}</strong> ${order.refusalReason}
-                            ${order.courierName ? `<div class="mt-1 text-[11px] text-rose-400">🛵 اللفرور: ${order.courierName}</div>` : ''}
-                        </div>
-                    ` : ''}
-                    ${order.status === 'scheduled' ? `
-                        <div class="mt-3 bg-sky-950/40 border border-sky-900/50 rounded-xl p-2.5 text-xs text-sky-200 flex justify-between items-center">
-                            <span>📅 ${translations[currentLang].scheduledDateLabel} ${order.scheduledDate} (${order.scheduledTime})</span>
-                            <button onclick="returnToCourier('${order.id}')" class="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded-lg font-bold transition-smooth">${translations[currentLang].returnBtn}</button>
-                        </div>
-                    ` : ''}
                 </div>`;
             }).join('');
         }
