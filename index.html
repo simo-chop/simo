@@ -303,7 +303,7 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-300 mb-1" data-i18n="imageUrl">رابط صورة المنتج (URL أو اسم الصورة):</label>
-                    <input id="new-prod-img" type="text" placeholder="https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
+                    <input id="new-prod-img" type="text" placeholder="beige.jpg أو https://..." class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-medium bg-slate-800 text-white text-left" dir="ltr">
                 </div>
             </div>
             <div class="flex gap-2.5 pt-2">
@@ -535,13 +535,14 @@
             { id: 'controllers', nameAr: 'المانيطات', nameFr: 'Manettes' }
         ];
 
+        // أسماء الصور مضبوطة تماماً حسب ملفاتك: beige.jpg, black.jpg, blue.jpg, gray.jpg, green.jpg, pink.jpg
         const DEFAULT_COLORS = [
             { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
-            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
-            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
-            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
-            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
             { id: 'black', name: 'مظلة باللون الأسود', stock: 110, price: 130, img: 'black.jpg', category: 'parasols' },
+            { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
+            { id: 'gray', name: 'مظلة باللون الرمادي', stock: 85, price: 130, img: 'gray.jpg', category: 'parasols' },
+            { id: 'green', name: 'مظلة باللون الأخضر', stock: 90, price: 130, img: 'green.jpg', category: 'parasols' },
+            { id: 'pink', name: 'مظلة باللون الوردي', stock: 80, price: 130, img: 'pink.jpg', category: 'parasols' },
             { id: 'ctrl_1', name: 'مانيطة بلوتوث احترافية لاسلكية', stock: 50, price: 160, img: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=200', category: 'controllers' },
             { id: 'ctrl_2', name: 'مانيطة ألعاب للهاتف والكمبيوتر', stock: 40, price: 150, img: 'https://images.unsplash.com/photo-1612287233306-604812a2a67e?w=200', category: 'controllers' }
         ];
