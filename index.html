@@ -186,13 +186,16 @@
             </div>
         </section>
 
-        <!-- إدارة المخزون والمنتجات والفئات -->
+        <!-- إدارة المخزون والفئات والمنتجات -->
         <section id="seller-tab-inventory" class="space-y-4 hidden">
             <div class="flex flex-wrap items-center justify-between gap-3 glass-panel p-5 rounded-3xl">
                 <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
                     <i class="fa-solid fa-boxes-stacked text-indigo-400"></i> <span data-i18n="inventoryTitle">إدارة المخزون والمنتجات</span>
                 </h2>
-                <div class="flex items-center gap-2.5">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="openCategoryModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
+                        <i class="fa-solid fa-folder-plus"></i> <span>إضافة / إدارة الفئات</span>
+                    </button>
                     <button onclick="openNewProductModal()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
                         <i class="fa-solid fa-circle-plus"></i> <span data-i18n="addProductBtn">إضافة منتج جديد</span>
                     </button>
@@ -204,6 +207,34 @@
             <div id="inventory-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
     </main>
+
+    <!-- نافذة إضافة / إدارة الفئات -->
+    <div id="category-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white">📁 إضافة فئة جديدة</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <div class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">معرف الفئة (ID بالإنجليزية بدون فراغات):</label>
+                    <input id="new-cat-id" type="text" placeholder="مثال: watches" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white text-left" dir="ltr">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">اسم الفئة بالعربية:</label>
+                    <input id="new-cat-ar" type="text" placeholder="مثال: الساعات الذكية" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">اسم الفئة بالفرنسية:</label>
+                    <input id="new-cat-fr" type="text" placeholder="Ex: Montres" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                </div>
+            </div>
+            <div class="flex gap-2.5 pt-2">
+                <button onclick="handleNewCategorySubmit()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-smooth">إضافة الفئة</button>
+                <button onclick="closeCategoryModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
     <!-- نافذة تعديل المنتج -->
     <div id="price-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
@@ -219,10 +250,7 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">الفئة (Category):</label>
-                    <select id="edit-category-input" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                        <option value="parasols">المظلات (Parasols)</option>
-                        <option value="controllers">المانيطات (Controllers)</option>
-                    </select>
+                    <select id="edit-category-input" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white"></select>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-300 mb-1" data-i18n="sellingPrice">سعر الوحدة</label>
@@ -250,14 +278,11 @@
             <div class="space-y-3.5 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1" data-i18n="productName">اسم المنتج *:</label>
-                    <input id="new-prod-name" type="text" placeholder="مثال: مظلة جديدة" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                    <input id="new-prod-name" type="text" placeholder="مثال: منتج جديد" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">اختر الفئة (Category) *:</label>
-                    <select id="new-prod-category" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                        <option value="parasols">المظلات (Parasols)</option>
-                        <option value="controllers">المانيطات (Controllers)</option>
-                    </select>
+                    <select id="new-prod-category" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white"></select>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-300 mb-1" data-i18n="sellingPrice">سعر الوحدة *:</label>
@@ -505,6 +530,11 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const DEFAULT_CATEGORIES = [
+            { id: 'parasols', nameAr: 'المظلات', nameFr: 'Parasols' },
+            { id: 'controllers', nameAr: 'المانيطات', nameFr: 'Manettes' }
+        ];
+
         const DEFAULT_COLORS = [
             { id: 'beige', name: 'مظلة باللون البيج', stock: 100, price: 130, img: 'beige.jpg', category: 'parasols' },
             { id: 'blue', name: 'مظلة باللون الأزرق', stock: 95, price: 130, img: 'blue.jpg', category: 'parasols' },
@@ -518,6 +548,7 @@
 
         let orders = [];
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+        let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         let courierDebt = 0;
         let currentFilter = 'pending';
         let editingColorId = null;
@@ -529,18 +560,19 @@
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || DEFAULT_COLORS;
+                    categories = data.payload.categories || DEFAULT_CATEGORIES;
                     courierDebt = data.payload.courierDebt || 0;
                 }
             } catch (e) {}
 
-            if (!colors || colors.length === 0) {
-                colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
-            }
+            if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            if (!categories || categories.length === 0) categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
 
             if (currentOrderItems.length > 0 && !currentOrderItems[0].productId && colors.length > 0) {
                 currentOrderItems[0].productId = colors[0].id;
             }
 
+            updateCategorySelects();
             renderOrderItems();
             renderSellerOrders();
             renderCustomerOrders();
@@ -549,7 +581,7 @@
         }
 
         async function saveAllToSupabase() {
-            const payload = { orders, colors, courierDebt };
+            const payload = { orders, colors, categories, courierDebt };
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
 
@@ -558,7 +590,9 @@
               if (payload.new && payload.new.payload) {
                   orders = payload.new.payload.orders || [];
                   colors = payload.new.payload.colors || DEFAULT_COLORS;
+                  categories = payload.new.payload.categories || DEFAULT_CATEGORIES;
                   courierDebt = payload.new.payload.courierDebt || 0;
+                  updateCategorySelects();
                   renderSellerOrders();
                   renderCustomerOrders();
                   renderInventoryList();
@@ -569,6 +603,44 @@
 
         loadDataFromSupabase();
         changeLanguage(currentLang);
+
+        function updateCategorySelects() {
+            const selects = [document.getElementById('edit-category-input'), document.getElementById('new-prod-category')];
+            selects.forEach(sel => {
+                if (!sel) return;
+                sel.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.nameAr} (${cat.nameFr})</option>`).join('');
+            });
+        }
+
+        function openCategoryModal() {
+            document.getElementById('new-cat-id').value = '';
+            document.getElementById('new-cat-ar').value = '';
+            document.getElementById('new-cat-fr').value = '';
+            document.getElementById('category-modal').classList.remove('hidden');
+        }
+        function closeCategoryModal() { document.getElementById('category-modal').classList.add('hidden'); }
+
+        function handleNewCategorySubmit() {
+            const id = document.getElementById('new-cat-id').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const nameAr = document.getElementById('new-cat-ar').value.trim();
+            const nameFr = document.getElementById('new-cat-fr').value.trim();
+
+            if (!id || !nameAr) {
+                alert('المرجو إدخال معرف وفئة صحيحة');
+                return;
+            }
+
+            if (categories.some(c => c.id === id)) {
+                alert('هذا المعرف موجود مسبقاً');
+                return;
+            }
+
+            categories.push({ id, nameAr, nameFr: nameFr || nameAr });
+            closeCategoryModal();
+            updateCategorySelects();
+            saveAllToSupabase();
+            alert('تم إضافة الفئة بنجاح!');
+        }
 
         function confirmCustomerOrder(id) {
             const order = orders.find(o => o.id === id);
@@ -868,16 +940,18 @@
         function renderInventoryList() {
             const list = document.getElementById('inventory-list');
             if (!list) return;
-            if (!colors || colors.length === 0) {
-                colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
-            }
-            list.innerHTML = colors.map(item => `
+            if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
+            
+            list.innerHTML = colors.map(item => {
+                const catObj = categories.find(c => c.id === item.category);
+                const catName = catObj ? catObj.nameAr : (item.category || 'عام');
+                return `
                 <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-md transition-smooth text-xs">
                     <div class="flex items-center gap-3">
                         <img src="${item.img}" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200';" class="w-12 h-12 rounded-xl object-cover shadow-xs border border-slate-700 flex-shrink-0" alt="صورة المنتج">
                         <div>
                             <div class="font-extrabold text-white text-sm">${item.name}</div>
-                            <div class="text-[10px] text-indigo-400 font-bold uppercase mt-0.5">الفئة: ${item.category === 'controllers' ? 'مانيطات' : 'مظلات'}</div>
+                            <div class="text-[10px] text-indigo-400 font-bold uppercase mt-0.5">الفئة: ${catName}</div>
                             <div class="text-[11px] text-slate-400 font-semibold mt-0.5">${item.price} ${translations[currentLang].currency}</div>
                         </div>
                     </div>
@@ -887,13 +961,15 @@
                         <button onclick="deleteProduct('${item.id}')" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 px-2.5 py-1.5 rounded-xl transition-smooth"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function openPriceModal(id) {
             editingColorId = id;
             const item = colors.find(c => c.id === id);
             if(!item) return;
+            updateCategorySelects();
             document.getElementById('edit-name-input').value = item.name;
             document.getElementById('edit-category-input').value = item.category || 'parasols';
             document.getElementById('edit-price-input').value = item.price;
@@ -923,8 +999,8 @@
         }
 
         function openNewProductModal() {
+            updateCategorySelects();
             document.getElementById('new-prod-name').value = '';
-            document.getElementById('new-prod-category').value = 'parasols';
             document.getElementById('new-prod-price').value = '130';
             document.getElementById('new-prod-stock').value = '10';
             document.getElementById('new-prod-img').value = '';
