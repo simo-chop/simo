@@ -193,8 +193,8 @@
                     <i class="fa-solid fa-boxes-stacked text-indigo-400"></i> <span data-i18n="inventoryTitle">إدارة المخزون والمنتجات</span>
                 </h2>
                 <div class="flex flex-wrap items-center gap-2.5">
-                    <button onclick="openCategoryModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
-                        <i class="fa-solid fa-folder-plus"></i> <span>إضافة / إدارة الفئات</span>
+                    <button onclick="openCategoryManagerModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
+                        <i class="fa-solid fa-folder-tree"></i> <span>إدارة وعرض الفئات</span>
                     </button>
                     <button onclick="openNewProductModal()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
                         <i class="fa-solid fa-circle-plus"></i> <span data-i18n="addProductBtn">إضافة منتج جديد</span>
@@ -208,31 +208,34 @@
         </section>
     </main>
 
-    <!-- نافذة إضافة / إدارة الفئات -->
-    <div id="category-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+    <!-- نافذة إدارة وعرض وتعديل الفئات -->
+    <div id="category-manager-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-sm font-extrabold text-white">📁 إضافة فئة جديدة</h3>
-                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+                <h3 class="text-sm font-extrabold text-white">📁 إدارة وفئات المتجر</h3>
+                <button onclick="closeCategoryManagerModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
             </div>
-            <div class="space-y-3.5 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">معرف الفئة (ID بالإنجليزية بدون فراغات):</label>
-                    <input id="new-cat-id" type="text" placeholder="مثال: watches" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white text-left" dir="ltr">
+
+            <!-- نموذج إضافة فئة جديدة داخل النافذة -->
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <h4 class="text-xs font-black text-amber-400">➕ إضافة فئة جديدة</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <input id="new-cat-id" type="text" placeholder="ID (مثال: watches)" class="px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white font-bold text-left" dir="ltr">
+                    <input id="new-cat-ar" type="text" placeholder="الاسم بالعربية" class="px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white font-bold">
+                    <input id="new-cat-fr" type="text" placeholder="Nom en FR" class="px-3 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white font-bold">
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">اسم الفئة بالعربية:</label>
-                    <input id="new-cat-ar" type="text" placeholder="مثال: الساعات الذكية" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">اسم الفئة بالفرنسية:</label>
-                    <input id="new-cat-fr" type="text" placeholder="Ex: Montres" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-white">
+                <button onclick="handleNewCategorySubmit()" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-smooth">حفظ وإضافة الفئة</button>
+            </div>
+
+            <!-- قائمة الفئات الحالية للتعديل أو الحذف -->
+            <div class="space-y-3">
+                <h4 class="text-xs font-black text-slate-300">الفئات الحالية الموجودة:</h4>
+                <div id="categories-list-container" class="space-y-2.5">
+                    <!-- تعبئة ديناميكية -->
                 </div>
             </div>
-            <div class="flex gap-2.5 pt-2">
-                <button onclick="handleNewCategorySubmit()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-smooth">إضافة الفئة</button>
-                <button onclick="closeCategoryModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth">إلغاء</button>
-            </div>
+
+            <button onclick="closeCategoryManagerModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth">إغلاق</button>
         </div>
     </div>
 
@@ -612,13 +615,30 @@
             });
         }
 
-        function openCategoryModal() {
+        function openCategoryManagerModal() {
+            renderCategoriesList();
             document.getElementById('new-cat-id').value = '';
             document.getElementById('new-cat-ar').value = '';
             document.getElementById('new-cat-fr').value = '';
-            document.getElementById('category-modal').classList.remove('hidden');
+            document.getElementById('category-manager-modal').classList.remove('hidden');
         }
-        function closeCategoryModal() { document.getElementById('category-modal').classList.add('hidden'); }
+        function closeCategoryManagerModal() { document.getElementById('category-manager-modal').classList.add('hidden'); }
+
+        function renderCategoriesList() {
+            const container = document.getElementById('categories-list-container');
+            if (!container) return;
+            container.innerHTML = categories.map(cat => `
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs">
+                    <div>
+                        <div class="font-black text-white">${cat.nameAr} <span class="text-[10px] text-slate-400">(${cat.nameFr})</span></div>
+                        <div class="text-[10px] text-indigo-400 font-mono mt-0.5">ID: ${cat.id}</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="deleteCategory('${cat.id}')" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 px-2.5 py-1.5 rounded-lg transition-smooth"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         function handleNewCategorySubmit() {
             const id = document.getElementById('new-cat-id').value.trim().toLowerCase().replace(/\s+/g, '_');
@@ -626,20 +646,35 @@
             const nameFr = document.getElementById('new-cat-fr').value.trim();
 
             if (!id || !nameAr) {
-                alert('المرجو إدخال معرف وفئة صحيحة');
+                alert('المرجو إدخال معرف (ID) واسم الفئة بالعربية');
                 return;
             }
 
             if (categories.some(c => c.id === id)) {
-                alert('هذا المعرف موجود مسبقاً');
+                alert('هذا المعرف (ID) موجود مسبقاً');
                 return;
             }
 
             categories.push({ id, nameAr, nameFr: nameFr || nameAr });
-            closeCategoryModal();
+            document.getElementById('new-cat-id').value = '';
+            document.getElementById('new-cat-ar').value = '';
+            document.getElementById('new-cat-fr').value = '';
+            renderCategoriesList();
             updateCategorySelects();
             saveAllToSupabase();
             alert('تم إضافة الفئة بنجاح!');
+        }
+
+        function deleteCategory(id) {
+            if (categories.length <= 1) {
+                alert('يجب أن تبقى فئة واحدة على الأقل في المتجر');
+                return;
+            }
+            if (!confirm('هل تريد حذف هذه الفئة؟')) return;
+            categories = categories.filter(c => c.id !== id);
+            renderCategoriesList();
+            updateCategorySelects();
+            saveAllToSupabase();
         }
 
         function confirmCustomerOrder(id) {
