@@ -1,56 +1,180 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="fr" dir="ltr" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simo Chop - صفحة اللفرور</title>
+    <title>Simo Chop - Page Livreur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f1f5f9; min-height: 100vh; }
-        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
-        .glass-header { background: rgba(11, 15, 25, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-        .transition-smooth { transition: all 0.25s ease-in-out; }
+        .card-bg { background: #111827; border: 1px solid rgba(255, 255, 255, 0.07); }
+        .header-bg { background: rgba(11, 15, 25, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+        .transition-smooth { transition: all 0.2s ease-in-out; }
     </style>
 </head>
-<body class="min-h-screen pb-24 text-slate-100">
+<body class="min-h-screen pb-20 text-slate-100">
 
-    <header class="glass-header sticky top-0 z-50 shadow-lg">
-        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-                <h1 id="pageTitle" class="text-sm font-black tracking-wide text-white">لوحة تتبع التوصيل</h1>
+    <!-- الهيدر العلوي المطابق للتصميم الأصلي -->
+    <header class="header-bg sticky top-0 z-50">
+        <div class="max-w-xl mx-auto px-4 pt-3.5 pb-3 flex justify-between items-center gap-2" dir="ltr">
+            <!-- أزرار اللغات -->
+            <div class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-full p-1">
+                <button onclick="changeLanguage('ar')" id="lang-ar" class="px-3 py-1 text-[11px] font-bold rounded-full transition-smooth text-slate-300">AR</button>
+                <button onclick="changeLanguage('fr')" id="lang-fr" class="px-3 py-1 text-[11px] font-bold rounded-full transition-smooth bg-indigo-600 text-white">FR</button>
+                <button onclick="changeLanguage('en')" id="lang-en" class="px-3 py-1 text-[11px] font-bold rounded-full transition-smooth text-slate-300">EN</button>
             </div>
-            <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-xl object-cover border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
+
+            <!-- زر الخروج واسم اللفرور والأيقونة -->
+            <div class="flex items-center gap-3">
+                <button onclick="logoutCourier()" class="w-9 h-9 rounded-full bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xs transition-smooth" title="Logout">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+                <h1 class="text-sm font-black text-white tracking-wide">
+                    <span data-i18n="pageTitle">Page Livreur:</span> <span id="courierDisplayName">سيمو</span>
+                </h1>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-800/50 flex items-center justify-center text-lg shadow-md">
+                    🛵
+                </div>
+            </div>
+        </div>
+
+        <!-- شارة عدد الطلبات قيد الانتظار -->
+        <div class="max-w-xl mx-auto px-4 py-2.5 border-t border-slate-800/80 flex items-center" dir="ltr">
+            <div class="bg-amber-500 text-slate-950 font-black text-xs px-4 py-1.5 rounded-full shadow-md inline-flex items-center gap-1.5">
+                <span id="pendingCountBadge">0</span>
+                <span data-i18n="pendingBadge">En attente</span>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 mt-6 space-y-6">
-        <div class="glass-panel p-5 rounded-3xl border border-indigo-500/30 flex justify-between items-center">
-            <div>
-                <p class="text-xs text-slate-400 font-bold">مصاريف التوصيل المحصلة اليوم</p>
-                <p id="courierDailyEarn" class="text-xl font-black text-emerald-400 mt-1">0 د.م</p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
-                <i class="fa-solid fa-motorcycle"></i>
+    <!-- قائمة الطلبات -->
+    <main class="max-w-xl mx-auto px-4 mt-4 space-y-4" id="courierOrdersList"></main>
+
+    <!-- نافذة سبب الرفض (Refusé) -->
+    <div id="refuse-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <h3 class="text-sm font-black text-rose-400" data-i18n="refuseModalTitle">سبب رفض الطلب</h3>
+            <input type="hidden" id="refuseOrderId">
+            <textarea id="refuseReasonInput" rows="3" placeholder="اكتب سبب الرفض (اختياري)..." class="w-full p-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none"></textarea>
+            <div class="flex gap-2">
+                <button onclick="confirmRefused()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-black py-3 rounded-2xl text-xs transition-smooth" data-i18n="confirmBtn">تأكيد</button>
+                <button onclick="closeRefuseModal()" class="px-5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs transition-smooth" data-i18n="cancelBtn">إلغاء</button>
             </div>
         </div>
+    </div>
 
-        <div class="bg-slate-800/60 p-1.5 rounded-2xl flex gap-2">
-            <button onclick="switchCourierTab('active')" id="ctab-active" class="flex-1 py-3 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm">
-                الطلبات المتاحة لتوصيلك
-            </button>
-            <button onclick="switchCourierTab('history')" id="ctab-history" class="flex-1 py-3 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white transition-smooth">
-                سجل التوصيل
-            </button>
+    <!-- نافذة جدولة الطلب (Planifié) -->
+    <div id="schedule-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <h3 class="text-sm font-black text-sky-400" data-i18n="scheduleModalTitle">جدولة موعد التوصيل</h3>
+            <input type="hidden" id="scheduleOrderId">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1" data-i18n="dateLabel">التاريخ:</label>
+                    <input type="date" id="scheduleDateInput" class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1" data-i18n="timeLabel">الوقت:</label>
+                    <input type="time" id="scheduleTimeInput" class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-700 text-white font-bold">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="confirmScheduled()" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-black py-3 rounded-2xl text-xs transition-smooth" data-i18n="confirmBtn">تأكيد</button>
+                <button onclick="closeScheduleModal()" class="px-5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs transition-smooth" data-i18n="cancelBtn">إلغاء</button>
+            </div>
         </div>
-
-        <div id="courierOrdersList" class="space-y-4"></div>
-    </main>
+    </div>
 
     <script>
+        const translations = {
+            ar: {
+                pageTitle: "صفحة اللفرور:",
+                pendingBadge: "قيد الانتظار",
+                qtyLabel: "الكمية:",
+                currency: "د.م",
+                whatsappClient: "واتساب الزبون",
+                btnDelivered: "تم الإستلام",
+                btnRefused: "رفض",
+                btnScheduled: "مجدول",
+                noOrders: "لا توجد طلبات قيد الانتظار حالياً",
+                refuseModalTitle: "سبب رفض الاستلام",
+                scheduleModalTitle: "جدولة موعد التوصيل",
+                dateLabel: "التاريخ:",
+                timeLabel: "الوقت:",
+                confirmBtn: "تأكيد",
+                cancelBtn: "إلغاء"
+            },
+            fr: {
+                pageTitle: "Page Livreur:",
+                pendingBadge: "En attente",
+                qtyLabel: "Qté:",
+                currency: "DH",
+                whatsappClient: "WhatsApp Client",
+                btnDelivered: "Livré",
+                btnRefused: "Refusé",
+                btnScheduled: "Planifié",
+                noOrders: "Aucune commande en attente",
+                refuseModalTitle: "Motif du refus",
+                scheduleModalTitle: "Planifier la livraison",
+                dateLabel: "Date:",
+                timeLabel: "Heure:",
+                confirmBtn: "Confirmer",
+                cancelBtn: "Annuler"
+            },
+            en: {
+                pageTitle: "Courier Page:",
+                pendingBadge: "Pending",
+                qtyLabel: "Qty:",
+                currency: "DH",
+                whatsappClient: "WhatsApp Client",
+                btnDelivered: "Delivered",
+                btnRefused: "Refused",
+                btnScheduled: "Scheduled",
+                noOrders: "No pending orders currently",
+                refuseModalTitle: "Reason for refusal",
+                scheduleModalTitle: "Schedule Delivery",
+                dateLabel: "Date:",
+                timeLabel: "Time:",
+                confirmBtn: "Confirm",
+                cancelBtn: "Cancel"
+            }
+        };
+
+        // تحديد ما إذا كانت الصفحة هي liv.html (لفرور 2) أو livreur.html (لفرور 1)
+        const isLiv2 = window.location.pathname.includes('liv.html');
+        const defaultCourierName = isLiv2 ? 'لفرور 2' : (localStorage.getItem('COURIER_NAME') || 'سيمو');
+        document.getElementById('courierDisplayName').textContent = defaultCourierName;
+
+        let currentLang = localStorage.getItem('COURIER_LANG') || 'fr';
+
+        function logoutCourier() {
+            localStorage.removeItem('COURIER_LOGGED_IN');
+            window.location.href = 'login-livreur.html';
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('COURIER_LANG', lang);
+            ['ar', 'fr', 'en'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (btn) {
+                    btn.className = l === lang
+                        ? "px-3 py-1 text-[11px] font-bold rounded-full transition-smooth bg-indigo-600 text-white shadow-sm"
+                        : "px-3 py-1 text-[11px] font-bold rounded-full transition-smooth text-slate-300 hover:text-white";
+                }
+            });
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.textContent = translations[lang][key];
+            });
+
+            renderCourierOrders();
+        }
+
         const SUPABASE_URL = "https://odrqwpcwcdfftjxatkyx.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcnF3cGN3Y2RmZnRqeGF0a3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNjA2MzAsImV4cCI6MjEwNzkzNjYzMH0.Fvjz335UThZ0OfnwpdKCoO2Zg_WQA8jinFJnGV4CrB0";
 
@@ -58,116 +182,209 @@
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let orders = [];
-        let courierTab = 'active';
-
-        // تحديد اسم اللفرور بناءً على اسم الملف الحالي (livreur.html أو liv.html)
-        const isLiv2 = window.location.pathname.includes('liv.html');
-        const myCourierName = isLiv2 ? 'لفرور 2 (liv)' : 'لفرور 1 (livreur)';
-        document.getElementById('pageTitle').textContent = `توصيل الطلبات - ${myCourierName}`;
+        let colors = [];
 
         async function loadCourierData() {
             try {
                 const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
+                    colors = data.payload.colors || [];
                 }
             } catch (e) {}
             renderCourierOrders();
         }
 
         async function saveCourierData() {
-            const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
-            let currentPayload = data && data.payload ? data.payload : {};
-            currentPayload.orders = orders;
-            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
+            try {
+                const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
+                let currentPayload = data && data.payload ? data.payload : {};
+                currentPayload.orders = orders;
+                if (colors.length > 0) currentPayload.colors = colors;
+                await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
+            } catch (e) {}
         }
 
         sb.channel('public:app_state_courier_realtime')
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
               if (payload.new && payload.new.payload) {
                   orders = payload.new.payload.orders || [];
+                  colors = payload.new.payload.colors || [];
                   renderCourierOrders();
               }
           })
           .subscribe();
 
-        loadCourierData();
-
-        function switchCourierTab(tab) {
-            courierTab = tab;
-            document.getElementById('ctab-active').className = tab === 'active' ? 'flex-1 py-3 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm' : 'flex-1 py-3 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white transition-smooth';
-            document.getElementById('ctab-history').className = tab === 'history' ? 'flex-1 py-3 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm' : 'flex-1 py-3 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white transition-smooth';
-            renderCourierOrders();
+        function formatWhatsAppPhone(phone) {
+            if (!phone) return '';
+            let p = phone.replace(/\D/g, '');
+            if (p.startsWith('0')) {
+                p = '212' + p.substring(1);
+            }
+            return p;
         }
 
-        async function updateOrderStatus(orderId, newStatus) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-
-            order.status = newStatus;
-            order.deliveredAt = Date.now();
-            order.courierName = myCourierName;
-
-            await saveCourierData();
-            renderCourierOrders();
+        function filterOrdersForThisPage(ordersList) {
+            return ordersList.filter(o => {
+                if (o.status !== 'pending' && o.status !== 'scheduled') return false;
+                if (isLiv2) {
+                    // صفحة liv.html تعرض الطلبات المسندة للفرور 2
+                    return o.courierAssigned && (o.courierAssigned.includes('2') || o.courierAssigned.includes('(liv)'));
+                } else {
+                    // صفحة livreur.html تعرض جميع الطلبات غير المسندة للفرور 2
+                    return !o.courierAssigned || !o.courierAssigned.includes('2');
+                }
+            });
         }
 
         function renderCourierOrders() {
             const container = document.getElementById('courierOrdersList');
+            const badge = document.getElementById('pendingCountBadge');
             if (!container) return;
 
-            // تصفية الطلبات الخاصة بهذا اللفرور فقط
-            let myAssignedOrders = orders.filter(o => o.courierAssigned === myCourierName);
+            const activeOrders = filterOrdersForThisPage(orders);
+            if (badge) badge.textContent = activeOrders.length;
 
-            let filtered = [];
-            if (courierTab === 'active') {
-                filtered = myAssignedOrders.filter(o => o.status === 'pending' || o.status === 'scheduled');
-            } else {
-                filtered = myAssignedOrders.filter(o => o.status === 'delivered' || o.status === 'refused');
-            }
-
-            const todayStr = new Date().toDateString();
-            const earnedToday = myAssignedOrders.filter(o => o.status === 'delivered' && o.deliveredAt && new Date(o.deliveredAt).toDateString() === todayStr)
-                                                 .reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
-            document.getElementById('courierDailyEarn').textContent = earnedToday + ' د.م';
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-xs font-semibold">لا توجد طلبات مسندة لك في هذا القسم حالياً</div>`;
+            if (activeOrders.length === 0) {
+                container.innerHTML = `<div class="card-bg rounded-3xl text-center py-14 text-slate-400 text-xs font-bold">${translations[currentLang].noOrders}</div>`;
                 return;
             }
 
-            container.innerHTML = filtered.map(order => `
-                <div class="glass-panel p-5 rounded-3xl space-y-3.5 border border-slate-800">
-                    <div class="flex justify-between items-start gap-2">
-                        <div>
-                            <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-bold px-3 py-1 rounded-xl">${order.productName}</span>
-                            <p class="font-bold text-slate-200 text-xs mt-2.5 flex items-center gap-1.5">
-                                <span class="text-rose-400">📍</span> ${order.address}
-                            </p>
+            const t = translations[currentLang];
+
+            container.innerHTML = activeOrders.map(order => `
+                <div class="card-bg rounded-3xl p-5 shadow-xl space-y-4" dir="ltr">
+                    <!-- السطر العلوي: اسم المنتج والكمية والسعر -->
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="space-y-1.5">
+                            <div class="inline-flex items-center gap-1.5 bg-amber-950/60 border border-amber-700/40 text-amber-300 font-extrabold text-xs px-3.5 py-1.5 rounded-full">
+                                <span>📦</span>
+                                <span dir="auto">${order.productName}</span>
+                            </div>
+                            <div>
+                                <span class="inline-block bg-slate-800/90 text-indigo-300 font-extrabold text-[11px] px-2.5 py-0.5 rounded-lg">
+                                    ${t.qtyLabel} ${order.quantity || 1}
+                                </span>
+                            </div>
                         </div>
-                        <span class="font-black text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl text-xs">${order.price} د.م</span>
+
+                        <div class="bg-teal-950/50 border border-teal-800/40 text-emerald-400 font-black px-3.5 py-2 rounded-2xl text-xs text-center leading-snug flex-shrink-0">
+                            <div>${order.price}</div>
+                            <div>${t.currency}</div>
+                        </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                        <a href="tel:${order.phone}" class="font-bold text-indigo-400 hover:underline bg-indigo-500/10 px-3 py-1.5 rounded-xl" dir="ltr">📞 ${order.phone}</a>
-                        <span class="text-slate-400 font-semibold">التوصيل: ${order.deliveryFee || 20} د.م</span>
+                    <!-- العنوان -->
+                    <div class="font-extrabold text-white text-sm flex items-center gap-1.5 pt-1">
+                        <span>📍</span>
+                        <span dir="auto">${order.address}</span>
                     </div>
 
-                    ${courierTab === 'active' ? `
-                    <div class="grid grid-cols-2 gap-2 pt-2">
-                        <button onclick="updateOrderStatus('${order.id}', 'delivered')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs transition-smooth flex items-center justify-center gap-1.5 shadow-md">
-                            <i class="fa-solid fa-check"></i> تم الاستلام
+                    <!-- أزرار الاتصال وواتساب الزبون -->
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <a href="tel:${order.phone}" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-smooth">
+                            <span>📞</span>
+                            <span>${order.phone}</span>
+                        </a>
+                        <a href="https://wa.me/${formatWhatsAppPhone(order.phone)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-smooth">
+                            <i class="fa-brands fa-whatsapp text-base"></i>
+                            <span>${t.whatsappClient}</span>
+                        </a>
+                    </div>
+
+                    <!-- أزرار حالة الطلب: Livré / Refusé / Planifié -->
+                    <div class="grid grid-cols-3 gap-2.5 pt-1">
+                        <button onclick="markDelivered('${order.id}')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-smooth">
+                            <span>✅</span>
+                            <span>${t.btnDelivered}</span>
                         </button>
-                        <button onclick="updateOrderStatus('${order.id}', 'refused')" class="bg-rose-600 hover:bg-rose-500 text-white font-black py-3 rounded-xl text-xs transition-smooth flex items-center justify-center gap-1.5 shadow-md">
-                            <i class="fa-solid fa-xmark"></i> رفض الاستلام
+                        <button onclick="openRefuseModal('${order.id}')" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-smooth">
+                            <span>✖</span>
+                            <span>${t.btnRefused}</span>
                         </button>
-                    </div>` : `
-                    <div class="text-center text-xs font-bold pt-2 text-${order.status === 'delivered' ? 'emerald' : 'rose'}-400">
-                        ${order.status === 'delivered' ? '✅ تم تسليم الطلب بنجاح' : '❌ تم رفض الطلب'}
-                    </div>`}
+                        <button onclick="openScheduleModal('${order.id}')" class="bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-extrabold py-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-smooth">
+                            <span>📅</span>
+                            <span>${t.btnScheduled}</span>
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
+
+        async function markDelivered(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            order.status = 'delivered';
+            order.deliveredAt = Date.now();
+            order.courierName = defaultCourierName;
+
+            // خصم الكمية من المخزون عند التسليم
+            if (order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    const prod = colors.find(c => c.id === item.productId);
+                    if (prod) prod.stock = Math.max(0, (prod.stock || 0) - (item.qty || 1));
+                });
+            }
+
+            renderCourierOrders();
+            await saveCourierData();
+        }
+
+        function openRefuseModal(orderId) {
+            document.getElementById('refuseOrderId').value = orderId;
+            document.getElementById('refuseReasonInput').value = '';
+            document.getElementById('refuse-modal').classList.remove('hidden');
+        }
+
+        function closeRefuseModal() {
+            document.getElementById('refuse-modal').classList.add('hidden');
+        }
+
+        async function confirmRefused() {
+            const orderId = document.getElementById('refuseOrderId').value;
+            const reason = document.getElementById('refuseReasonInput').value.trim();
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'refused';
+                order.refusalReason = reason;
+                order.deliveredAt = Date.now();
+                order.courierName = defaultCourierName;
+                closeRefuseModal();
+                renderCourierOrders();
+                await saveCourierData();
+            }
+        }
+
+        function openScheduleModal(orderId) {
+            document.getElementById('scheduleOrderId').value = orderId;
+            document.getElementById('scheduleDateInput').value = new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleTimeInput').value = '14:00';
+            document.getElementById('schedule-modal').classList.remove('hidden');
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('schedule-modal').classList.add('hidden');
+        }
+
+        async function confirmScheduled() {
+            const orderId = document.getElementById('scheduleOrderId').value;
+            const sDate = document.getElementById('scheduleDateInput').value;
+            const sTime = document.getElementById('scheduleTimeInput').value;
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'scheduled';
+                order.scheduledDate = sDate;
+                order.scheduledTime = sTime;
+                order.courierName = defaultCourierName;
+                closeScheduleModal();
+                renderCourierOrders();
+                await saveCourierData();
+            }
+        }
+
+        changeLanguage(currentLang);
+        loadCourierData();
     </script>
 </body>
 </html>
