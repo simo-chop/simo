@@ -40,18 +40,26 @@
             </div>
         </div>
 
-        <div class="max-w-6xl mx-auto px-4 pb-3.5 flex justify-between items-center gap-3 border-t border-slate-800/60 pt-3">
-            <div class="flex items-center gap-2">
-                <button onclick="openStorePage()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-2">
+        <div class="max-w-6xl mx-auto px-4 pb-3.5 flex flex-wrap justify-between items-center gap-2 border-t border-slate-800/60 pt-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="openStorePage()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-1.5">
                     <i class="fa-solid fa-store"></i> <span>عرض المتجر</span>
                 </button>
-                <button onclick="openCourierPage()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-2">
-                    <i class="fa-solid fa-motorcycle"></i> <span>صفحة اللفرور</span>
+                <button onclick="openCourierPage('livreur.html')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-3 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-1.5">
+                    <i class="fa-solid fa-motorcycle"></i> <span>لفرور 1 (livreur)</span>
+                </button>
+                <button onclick="openCourierPage('liv.html')" class="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold px-3 py-2 rounded-xl shadow-xs transition-smooth flex items-center gap-1.5">
+                    <i class="fa-solid fa-motorcycle"></i> <span>لفرور 2 (liv)</span>
                 </button>
             </div>
-            <button onclick="copyCourierLink()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 shadow-xs transition-smooth flex items-center gap-2">
-                <i class="fa-solid fa-link"></i> <span>نسخ رابط اللفرور</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="copyCourierLink('livreur.html')" class="bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold px-2.5 py-2 rounded-xl border border-slate-700 shadow-xs transition-smooth">
+                    <i class="fa-solid fa-link"></i> نسخ رابط 1
+                </button>
+                <button onclick="copyCourierLink('liv.html')" class="bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold px-2.5 py-2 rounded-xl border border-slate-700 shadow-xs transition-smooth">
+                    <i class="fa-solid fa-link"></i> نسخ رابط 2
+                </button>
+            </div>
         </div>
     </header>
 
@@ -111,9 +119,10 @@
                 </div>
             </div>
 
+            <!-- قسم طلبات الزبائن الواردة من المتجر -->
             <div class="glass-panel p-6 rounded-3xl border border-amber-500/30">
                 <h2 class="text-sm font-extrabold text-amber-400 mb-4 flex items-center gap-2.5">
-                    <span class="bg-amber-500/20 text-amber-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-store"></i></span> <span>طلبات الزبائن الواردة من المتجر (بانتظار التأكيد)</span>
+                    <span class="bg-amber-500/20 text-amber-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-store"></i></span> <span>طلبات الزبائن الواردة من المتجر (بانتظار التأكيد وإسناد اللفرور)</span>
                 </h2>
                 <div id="customerOrdersList" class="space-y-3.5"></div>
             </div>
@@ -122,7 +131,7 @@
                 <div class="lg:col-span-1">
                     <div class="glass-panel p-6 rounded-3xl sticky top-24">
                         <h2 class="text-sm font-extrabold text-white mb-4 flex items-center gap-2.5">
-                            <span class="bg-indigo-500/20 text-indigo-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-plus"></i></span> <span>إضافة طلب جديد</span>
+                            <span class="bg-indigo-500/20 text-indigo-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-plus"></i></span> <span>إضافة طلب جديد وإسناده للفرور</span>
                         </h2>
                         <form id="orderForm" class="space-y-4">
                             <div>
@@ -133,6 +142,13 @@
                                     </button>
                                 </div>
                                 <div id="orderItemsContainer" class="space-y-2.5"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">اختر اللفرور المسؤول *</label>
+                                <select id="assignCourier" required class="w-full px-3.5 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-amber-400 focus:outline-none">
+                                    <option value="لفرور 1 (livreur)">🛵 لفرور 1 (livreur.html)</option>
+                                    <option value="لفرور 2 (liv)">🛵 لفرور 2 (liv.html)</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-300 mb-1.5">الثمن الإجمالي</label>
@@ -156,7 +172,7 @@
                             </div>
                             <button type="submit"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-paper-plane"></i> <span>إرسال للفرور فوراً</span>
+                                <i class="fa-solid fa-paper-plane"></i> <span>إرسال للفرور المحدد</span>
                             </button>
                         </form>
                     </div>
@@ -211,7 +227,31 @@
         </section>
     </main>
 
-    <!-- النوافذ المنبثقة -->
+    <!-- نافذة تأكيد وإسناد طلب الزبون للفرور -->
+    <div id="assign-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white">🛵 إسناد الطلب للفرور</h3>
+                <button onclick="closeAssignModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <input type="hidden" id="modalOrderId">
+            <div class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1.5">اختر اللفرور المناسب:</label>
+                    <select id="modalCourierSelect" class="w-full h-11 px-3.5 border border-slate-700 rounded-xl font-bold bg-slate-800 text-amber-400">
+                        <option value="لفرور 1 (livreur)">لفرور 1 (livreur.html)</option>
+                        <option value="لفرور 2 (liv)">لفرور 2 (liv.html)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2.5 pt-2">
+                <button onclick="submitAssignedOrder()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-smooth">تأكيد وإرسال</button>
+                <button onclick="closeAssignModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold text-xs transition-smooth">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إدارة الفئات وتعديل المنتجات -->
     <div id="category-manager-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -414,15 +454,15 @@
 
         loadDataFromSupabase();
 
-        function getCourierUrl() {
+        function getCourierUrl(filename) {
             const loc = window.location;
             const baseUrl = loc.protocol + "//" + loc.host + loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
-            return `${baseUrl}liv.html`;
+            return `${baseUrl}${filename}`;
         }
 
-        function openCourierPage() { window.open(getCourierUrl(), '_blank'); }
-        function copyCourierLink() {
-            navigator.clipboard.writeText(getCourierUrl()).then(() => alert('تم نسخ رابط اللفرور !'));
+        function openCourierPage(filename) { window.open(getCourierUrl(filename), '_blank'); }
+        function copyCourierLink(filename) {
+            navigator.clipboard.writeText(getCourierUrl(filename)).then(() => alert('تم نسخ الرابط بنجاح !'));
         }
 
         function settleCourierDebt() {
@@ -505,11 +545,25 @@
             saveAllToSupabase();
         }
 
-        function confirmCustomerOrder(id) {
-            const order = orders.find(o => o.id === id);
+        // فتح نافذة إسناد الطلب للفرور عند تأكيد طلب الزبون
+        function openAssignModal(orderId) {
+            document.getElementById('modalOrderId').value = orderId;
+            document.getElementById('assign-modal').classList.remove('hidden');
+        }
+        function closeAssignModal() {
+            document.getElementById('assign-modal').classList.add('hidden');
+        }
+
+        async function submitAssignedOrder() {
+            const orderId = document.getElementById('modalOrderId').value;
+            const chosenCourier = document.getElementById('modalCourierSelect').value;
+
+            const order = orders.find(o => o.id === orderId);
             if (order) {
                 order.status = 'pending';
-                saveAllToSupabase();
+                order.courierAssigned = chosenCourier; // حفظ اسم اللفرور المسند إليه الطلب
+                await saveAllToSupabase();
+                closeAssignModal();
                 renderCustomerOrders();
                 renderSellerOrders();
                 updateSellerStats();
@@ -546,8 +600,8 @@
                     <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                         <span class="font-black text-white bg-slate-800 px-3 py-2 rounded-xl text-xs">${order.price} د.م</span>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="confirmCustomerOrder('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-smooth flex items-center gap-1.5">
-                                <i class="fa-solid fa-check"></i> <span>تأكيد وإرسال للفرور</span>
+                            <button onclick="openAssignModal('${order.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-smooth flex items-center gap-1.5">
+                                <i class="fa-solid fa-check"></i> <span>تأكيد وإسناد للفرور</span>
                             </button>
                             <button onclick="deleteOrder('${order.id}')" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 p-2.5 rounded-xl text-xs transition-smooth" title="حذف">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -618,6 +672,8 @@
                 if (product) productSummaryParts.push(`${product.name} (العدد: ${item.qty})`);
             });
 
+            const assignedCourier = document.getElementById('assignCourier').value;
+
             const newOrder = {
                 id: 'ORD_' + Date.now(),
                 productName: productSummaryParts.join(' + ') || 'منتجات متعددة',
@@ -628,6 +684,7 @@
                 price: parseFloat(document.getElementById('orderPrice').value) || 0,
                 deliveryFee: parseFloat(document.getElementById('orderDeliveryFee').value) || 20,
                 status: 'pending',
+                courierAssigned: assignedCourier, // إسناد الطلب للفرور المختار مباشرة
                 refusalReason: '',
                 scheduledDate: '',
                 scheduledTime: '',
@@ -731,6 +788,7 @@
                     <div class="flex justify-between items-start gap-2 mb-2">
                         <div>
                             <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-1 rounded-xl">${order.productName}</span>
+                            ${order.courierAssigned ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-lg ml-1">👤 ${order.courierAssigned}</span>` : ''}
                             <p class="font-bold text-slate-200 text-xs mt-2">📍 ${order.address}</p>
                         </div>
                         <button onclick="deleteOrder('${order.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 text-xs bg-slate-800 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
