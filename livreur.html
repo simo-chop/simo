@@ -89,6 +89,22 @@
     </div>
 
     <script>
+        // ==================== إعدادات الإشعارات الصامتة NTFY ====================
+        const NTFY_ADMIN_TOPIC = 'simo_chop_admin_9988'; // نفس القناة المشترك بها في هاتفك
+
+        function notifyAdminSilently(message, tags = 'motorcycle', priority = 'urgent') {
+            fetch(`https://ntfy.sh/${NTFY_ADMIN_TOPIC}`, {
+                method: 'POST',
+                body: message,
+                headers: {
+                    'Title': 'Simo-Chop Livreur',
+                    'Priority': priority,
+                    'Tags': tags
+                }
+            }).catch(() => {}); // صامت تماماً بدون أي أخطاء في المتصفح
+        }
+        // =========================================================================
+
         const translations = {
             ar: {
                 pageTitle: "صفحة اللفرور:",
@@ -145,7 +161,7 @@
 
         // تحديد ما إذا كانت الصفحة هي liv.html (لفرور 2) أو livreur.html (لفرور 1)
         const isLiv2 = window.location.pathname.includes('liv.html');
-        const defaultCourierName = isLiv2 ? 'لفرور 2' : (localStorage.getItem('COURIER_NAME') || 'سيمو');
+        const defaultCourierName = isLiv2 ? 'لفرور 2 (liv)' : (localStorage.getItem('COURIER_NAME') || 'لفرور 1 (سيمو)');
         document.getElementById('courierDisplayName').textContent = defaultCourierName;
 
         let currentLang = localStorage.getItem('COURIER_LANG') || 'fr';
@@ -228,10 +244,8 @@
             return ordersList.filter(o => {
                 if (o.status !== 'pending' && o.status !== 'scheduled') return false;
                 if (isLiv2) {
-                    // صفحة liv.html تعرض الطلبات المسندة للفرور 2
                     return o.courierAssigned && (o.courierAssigned.includes('2') || o.courierAssigned.includes('(liv)'));
                 } else {
-                    // صفحة livreur.html تعرض جميع الطلبات غير المسندة للفرور 2
                     return !o.courierAssigned || !o.courierAssigned.includes('2');
                 }
             });
@@ -265,6 +279,7 @@
                                 <span class="inline-block bg-slate-800/90 text-indigo-300 font-extrabold text-[11px] px-2.5 py-0.5 rounded-lg">
                                     ${t.qtyLabel} ${order.quantity || 1}
                                 </span>
+                                ${order.status === 'scheduled' ? `<span class="inline-block bg-sky-900/60 text-sky-300 font-bold text-[10px] px-2 py-0.5 rounded-lg ml-1">📅 ${order.scheduledDate || ''} ${order.scheduledTime || ''}</span>` : ''}
                             </div>
                         </div>
 
@@ -327,6 +342,13 @@
                 });
             }
 
+            // إرسال إشعار فوري وصامت لهاتفك عبر ntfy
+            notifyAdminSilently(
+                `✅ تم تسليم طلب بنجاح!\n👤 بواسطة: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n💰 المبلغ: ${order.price} د.م\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
+                'white_check_mark,moneybag',
+                'urgent'
+            );
+
             renderCourierOrders();
             await saveCourierData();
         }
@@ -350,6 +372,14 @@
                 order.refusalReason = reason;
                 order.deliveredAt = Date.now();
                 order.courierName = defaultCourierName;
+
+                // إرسال إشعار فوري وصامت لهاتفك عند الرفض
+                notifyAdminSilently(
+                    `❌ تم رفض استلام طلب!\n👤 اللفرور: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n❓ السبب: ${reason || 'غير محدد'}\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
+                    'x,warning',
+                    'urgent'
+                );
+
                 closeRefuseModal();
                 renderCourierOrders();
                 await saveCourierData();
@@ -377,6 +407,14 @@
                 order.scheduledDate = sDate;
                 order.scheduledTime = sTime;
                 order.courierName = defaultCourierName;
+
+                // إرسال إشعار فوري وصامت لهاتفك عند الجدولة
+                notifyAdminSilently(
+                    `📅 تمت جدولة طلب لموعد آخر!\n👤 اللفرور: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n⏰ الموعد: ${sDate} الساعة ${sTime}\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
+                    'calendar,clock3',
+                    'high'
+                );
+
                 closeScheduleModal();
                 renderCourierOrders();
                 await saveCourierData();
