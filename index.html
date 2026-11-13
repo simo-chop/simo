@@ -34,12 +34,12 @@
         <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center gap-2">
             <div class="flex items-center gap-1.5 flex-wrap">
                 <div class="flex items-center gap-1 bg-slate-800/80 border border-slate-700/80 rounded-xl p-0.5 shadow-inner">
-                    <button onclick="changeLanguage('ar')" id="lang-ar" class="px-2 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">العربية</button>
-                    <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">FR</button>
-                    <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">EN</button>
+                    <button onclick="changeLanguage('ar')" id="lang-ar" class="px-2 py-0.5 text-[10px] font-bold rounded-lg transition-smooth bg-indigo-600 text-white">العربية</button>
+                    <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-300">FR</button>
+                    <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-300">EN</button>
                 </div>
                 <button onclick="testAndEnableNotifications()" id="notifPermBtn" class="bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl border border-emerald-500/40 transition-smooth flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-bell animate-pulse"></i> <span id="notifBtnText">تفعيل وتجربة الإشعار</span>
+                    <i class="fa-solid fa-bell animate-pulse"></i> <span id="notifBtnText">تفعيل وتجربة الإشعار (ntfy)</span>
                 </button>
             </div>
             <div class="flex items-center gap-2.5">
@@ -378,9 +378,37 @@
     </div>
 
     <script>
+        // ==================== إعدادات NTFY ====================
+        const NTFY_ADMIN_TOPIC = 'simo_chop_admin_9988'; // اشترك في هذا الاسم داخل تطبيق ntfy على هاتفك
+
+        function sendNtfyNotification(topic, message, tags = 'bell', priority = 'high') {
+            fetch(`https://ntfy.sh/${topic}`, {
+                method: 'POST',
+                body: message,
+                headers: {
+                    'Title': 'Simo-Chop Alert',
+                    'Priority': priority,
+                    'Tags': tags
+                }
+            }).catch(() => {});
+        }
+        // ======================================================
+
         function logoutAdmin() {
             localStorage.removeItem('SIMO_LOGGED_IN');
             window.location.href = 'login.html';
+        }
+
+        function changeLanguage(lang) {
+            ['ar', 'fr', 'en'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (btn) {
+                    btn.className = l === lang
+                        ? "px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth bg-indigo-600 text-white"
+                        : "px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-300";
+                }
+            });
+            document.getElementById('htmlRoot').dir = lang === 'ar' ? 'rtl' : 'ltr';
         }
 
         const SUPABASE_URL = "https://odrqwpcwcdfftjxatkyx.supabase.co";
@@ -408,7 +436,7 @@
         let orders = [];
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
         let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        let courierDebt = 0;
+        let courierDebt = 0; // يحفظ وقت آخر تصفير للحساب في Supabase
         let currentFilter = 'pending';
         let editingColorId = null;
         let currentOrderItems = [{ productId: '', qty: 1 }];
@@ -419,7 +447,6 @@
         let initialLoadComplete = false;
         let globalAudioCtx = null;
 
-        // ==================== نظام الصوت والإشعارات المضمون ====================
         function unlockAudioContext() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -428,7 +455,6 @@
             } catch (e) {}
         }
 
-        // فتح قناة الصوت تلقائياً مع أول لمسة للشاشة في الهاتف
         document.addEventListener('touchstart', unlockAudioContext, { once: true });
         document.addEventListener('click', unlockAudioContext, { once: true });
 
@@ -437,7 +463,7 @@
                 unlockAudioContext();
                 if (!globalAudioCtx) return;
                 const now = globalAudioCtx.currentTime;
-                const notes = [587.33, 783.99, 987.77, 1174.66]; // نغمة جرس واضحة وعالية
+                const notes = [587.33, 783.99, 987.77, 1174.66];
                 notes.forEach((freq, idx) => {
                     const osc = globalAudioCtx.createOscillator();
                     const gain = globalAudioCtx.createGain();
@@ -452,7 +478,6 @@
                 });
             } catch (e) {}
 
-            // تشغيل اهتزاز الهاتف إن كان مدعوماً
             if (navigator.vibrate) {
                 try { navigator.vibrate([250, 100, 250]); } catch (e) {}
             }
@@ -499,9 +524,16 @@
             const txt = document.getElementById('notifBtnText');
             if (txt) txt.textContent = "الإشعارات شغالة ✔";
 
+            sendNtfyNotification(
+                NTFY_ADMIN_TOPIC,
+                "🔔 تجربة إشعار ناجحة من لوحة تحكم Simo-Chop!\nالإشعارات مربوطة الآن بهاتفك بنجاح.",
+                "white_check_mark,bell",
+                "urgent"
+            );
+
             showTopBannerToast(
-                "🔔 تجربة الإشعار ناجحة!",
-                "نظام الصوت والإشعارات يعمل الآن! سيصلك هذا التنبيه فور تسليم اللفرور لأي طلب."
+                "🔔 تم إرسال إشعار تجريبي إلى ntfy!",
+                `تأكد من اشتراكك في القناة (${NTFY_ADMIN_TOPIC}) داخل تطبيق ntfy على هاتفك.`
             );
 
             if ("Notification" in window && Notification.permission !== "granted") {
@@ -510,8 +542,6 @@
                         sendSystemNotification("✅ Simo Chop", "تم تفعيل إشعارات المتصفح بنجاح!");
                     }
                 }).catch(() => {});
-            } else {
-                sendSystemNotification("✅ Simo Chop", "الإشعارات الصوتية والمرئية جاهزة وتعمل بنجاح!");
             }
         }
 
@@ -534,9 +564,9 @@
                 const details = `الزبون: ${order.clientName || 'زبون'} | المنتج: ${order.productName} | 📍 ${order.address}`;
                 showTopBannerToast(title, details, 'border-amber-500');
                 sendSystemNotification(title, details);
+                sendNtfyNotification(NTFY_ADMIN_TOPIC, `${title}\n${details}\n📞 ${order.phone}`, 'shopping_cart,package', 'urgent');
             }
         }
-        // =======================================================================
 
         function sanitizeImgPath(img, itemName = '') {
             if (!img || img.startsWith('http') || img.length > 35) {
@@ -573,7 +603,6 @@
                 item.img = sanitizeImgPath(item.img, item.name);
             });
 
-            // حفظ حالة الطلبات الحالية عند أول فتح للصفحة
             orders.forEach(o => {
                 if (o.status === 'delivered') knownDeliveredIds.add(o.id);
                 if (o.status === 'refused') knownRefusedIds.add(o.id);
@@ -593,7 +622,6 @@
             updateSellerStats();
         }
 
-        // فحص دوري تلقائي كل 3 ثوانٍ لاكتشاف أي طلب تم تسليمه أو رفضه أو إضافته فوراً
         async function pollOrderUpdates() {
             if (!initialLoadComplete) return;
             try {
@@ -621,8 +649,9 @@
                     }
                 });
 
-                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders)) {
+                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0)) {
                     orders = incomingOrders;
+                    courierDebt = data.payload.courierDebt || 0;
                     if (data.payload.colors) {
                         colors = data.payload.colors;
                         colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
@@ -635,7 +664,6 @@
             } catch (e) {}
         }
 
-        // تشغيل الفحص التلقائي كل 3 ثوانٍ
         setInterval(pollOrderUpdates, 3000);
 
         async function saveAllToSupabase() {
@@ -656,9 +684,11 @@
             navigator.clipboard.writeText(getCourierUrl(filename)).then(() => alert('تم نسخ الرابط بنجاح !'));
         }
 
-        function settleCourierDebt() {
+        async function settleCourierDebt() {
             if (confirm('هل أنت متأكد من تصفير حساب المال المتبقي عند اللفرور؟')) {
-                localStorage.setItem(`SETTLED_TIME_simo_tanger`, Date.now().toString());
+                courierDebt = Date.now();
+                localStorage.setItem(`SETTLED_TIME_simo_tanger`, courierDebt.toString());
+                await saveAllToSupabase();
                 renderSellerOrders();
                 updateSellerStats();
             }
@@ -943,7 +973,9 @@
             const deliveredOrders = orders.filter(o => o.status === 'delivered');
             const refusedCount = orders.filter(o => o.status === 'refused').length;
 
-            const settledTime = parseInt(localStorage.getItem(`SETTLED_TIME_simo_tanger`) || '0');
+            const localSettled = parseInt(localStorage.getItem(`SETTLED_TIME_simo_tanger`) || '0');
+            const settledTime = Math.max(courierDebt || 0, localSettled);
+
             const unsettledToday = deliveredOrders.filter(o => (o.deliveredAt || 0) > settledTime);
             const unsettledRevenue = unsettledToday.reduce((sum, o) => sum + Number(o.price), 0);
             const unsettledDelivery = unsettledToday.reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
@@ -980,6 +1012,8 @@
                             <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-1 rounded-xl">${order.productName}</span>
                             ${order.courierAssigned ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-lg ml-1">👤 ${order.courierAssigned}</span>` : ''}
                             <p class="font-bold text-slate-200 text-xs mt-2">📍 ${order.address}</p>
+                            ${order.status === 'refused' && order.refusalReason ? `<p class="text-[11px] text-rose-400 font-bold mt-1">❌ سبب الرفض: ${order.refusalReason}</p>` : ''}
+                            ${order.status === 'scheduled' && order.scheduledDate ? `<p class="text-[11px] text-sky-400 font-bold mt-1">📅 موعد الجدولة: ${order.scheduledDate} الساعة ${order.scheduledTime || ''}</p>` : ''}
                         </div>
                         <button onclick="deleteOrder('${order.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 text-xs bg-slate-800 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
