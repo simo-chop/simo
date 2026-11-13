@@ -21,15 +21,13 @@
         <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-                <h1 class="text-sm font-black tracking-wide text-white">لوحة تتبع التوصيل (اللفرور)</h1>
+                <h1 id="pageTitle" class="text-sm font-black tracking-wide text-white">لوحة تتبع التوصيل</h1>
             </div>
             <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-xl object-cover border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
         </div>
     </header>
 
     <main class="max-w-3xl mx-auto px-4 mt-6 space-y-6">
-        
-        <!-- ملخص أرباح اللفرور -->
         <div class="glass-panel p-5 rounded-3xl border border-indigo-500/30 flex justify-between items-center">
             <div>
                 <p class="text-xs text-slate-400 font-bold">مصاريف التوصيل المحصلة اليوم</p>
@@ -40,17 +38,15 @@
             </div>
         </div>
 
-        <!-- تبويبات الطلبات المتاحة والمسلمة -->
         <div class="bg-slate-800/60 p-1.5 rounded-2xl flex gap-2">
             <button onclick="switchCourierTab('active')" id="ctab-active" class="flex-1 py-3 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm">
-                الطلبات المتاحة للتوصيل
+                الطلبات المتاحة لتوصيلك
             </button>
             <button onclick="switchCourierTab('history')" id="ctab-history" class="flex-1 py-3 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white transition-smooth">
                 سجل التوصيل
             </button>
         </div>
 
-        <!-- قائمة الطلبات -->
         <div id="courierOrdersList" class="space-y-4"></div>
     </main>
 
@@ -63,6 +59,11 @@
 
         let orders = [];
         let courierTab = 'active';
+
+        // تحديد اسم اللفرور بناءً على اسم الملف الحالي (livreur.html أو liv.html)
+        const isLiv2 = window.location.pathname.includes('liv.html');
+        const myCourierName = isLiv2 ? 'لفرور 2 (liv)' : 'لفرور 1 (livreur)';
+        document.getElementById('pageTitle').textContent = `توصيل الطلبات - ${myCourierName}`;
 
         async function loadCourierData() {
             try {
@@ -81,7 +82,6 @@
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
         }
 
-        // تحديث حي فوري للفرور
         sb.channel('public:app_state_courier_realtime')
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
               if (payload.new && payload.new.payload) {
@@ -106,7 +106,7 @@
 
             order.status = newStatus;
             order.deliveredAt = Date.now();
-            order.courierName = window.location.pathname.includes('liv.html') ? 'لفرور 2 (liv)' : 'لفرور 1 (livreur)';
+            order.courierName = myCourierName;
 
             await saveCourierData();
             renderCourierOrders();
@@ -116,21 +116,23 @@
             const container = document.getElementById('courierOrdersList');
             if (!container) return;
 
+            // تصفية الطلبات الخاصة بهذا اللفرور فقط
+            let myAssignedOrders = orders.filter(o => o.courierAssigned === myCourierName);
+
             let filtered = [];
             if (courierTab === 'active') {
-                filtered = orders.filter(o => o.status === 'pending' || o.status === 'scheduled');
+                filtered = myAssignedOrders.filter(o => o.status === 'pending' || o.status === 'scheduled');
             } else {
-                filtered = orders.filter(o => o.status === 'delivered' || o.status === 'refused');
+                filtered = myAssignedOrders.filter(o => o.status === 'delivered' || o.status === 'refused');
             }
 
-            // حساب أرباح التوصيل الخاصة بالفرور اليوم
             const todayStr = new Date().toDateString();
-            const earnedToday = orders.filter(o => o.status === 'delivered' && o.deliveredAt && new Date(o.deliveredAt).toDateString() === todayStr)
-                                       .reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
+            const earnedToday = myAssignedOrders.filter(o => o.status === 'delivered' && o.deliveredAt && new Date(o.deliveredAt).toDateString() === todayStr)
+                                                 .reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
             document.getElementById('courierDailyEarn').textContent = earnedToday + ' د.م';
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-xs font-semibold">لا توجد طلبات في هذا القسم حالياً</div>`;
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 text-xs font-semibold">لا توجد طلبات مسندة لك في هذا القسم حالياً</div>`;
                 return;
             }
 
