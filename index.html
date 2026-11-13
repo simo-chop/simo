@@ -360,7 +360,6 @@
         let editingColorId = null;
         let currentOrderItems = [{ productId: '', qty: 1 }];
 
-        // دالة تصحيح وتنظيف مسار الصورة تلقائياً لضمان عدم ظهور أي رابط خارجي معطل
         function sanitizeImgPath(img, itemName = '') {
             if (!img || img.startsWith('http') || img.length > 35) {
                 let nameLower = (itemName || '').toLowerCase();
@@ -414,6 +413,17 @@
         }
 
         loadDataFromSupabase();
+
+        function getCourierUrl() {
+            const loc = window.location;
+            const baseUrl = loc.protocol + "//" + loc.host + loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+            return `${baseUrl}liv.html`;
+        }
+
+        function openCourierPage() { window.open(getCourierUrl(), '_blank'); }
+        function copyCourierLink() {
+            navigator.clipboard.writeText(getCourierUrl()).then(() => alert('تم نسخ رابط اللفرور !'));
+        }
 
         function settleCourierDebt() {
             if (confirm('هل أنت متأكد من تصفير حساب المال المتبقي عند اللفرور؟')) {
@@ -680,17 +690,6 @@
             updateSellerStats();
         }
 
-        function getCourierUrl() {
-            const loc = window.location;
-            const baseUrl = loc.protocol + "//" + loc.host + loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
-            return `${baseUrl}livreur.html`;
-        }
-
-        function openCourierPage() { window.open(getCourierUrl(), '_blank'); }
-        function copyCourierLink() {
-            navigator.clipboard.writeText(getCourierUrl()).then(() => alert('تم نسخ رابط اللفرور !'));
-        }
-
         function updateSellerStats() {
             const pendingCount = orders.filter(o => o.status === 'pending').length;
             const scheduledCount = orders.filter(o => o.status === 'scheduled').length;
@@ -754,7 +753,7 @@
                 const catName = catObj ? catObj.nameAr : 'عام';
                 const finalImg = sanitizeImgPath(item.img, item.name);
                 return `
-                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-md text-xs">
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex items-center justify-between shadow-md text-xs">
                     <div class="flex items-center gap-3">
                         <img src="${finalImg}" onerror="this.src='black.jpg'" class="w-12 h-12 rounded-xl object-cover border border-slate-700 flex-shrink-0" alt="صورة">
                         <div>
