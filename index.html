@@ -19,34 +19,34 @@
         .glass-header { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
         .transition-smooth { transition: all 0.25s ease-in-out; }
         @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
+            from { transform: translateY(-120%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        .toast-enter { animation: slideDown 0.35s ease-out forwards; }
+        .toast-enter { animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body class="min-h-screen pb-24 text-slate-100">
 
     <!-- حاوية الإشعارات الفورية المنبثقة أعلى الشاشة -->
-    <div id="liveToastContainer" class="fixed top-4 left-4 right-4 z-[100] max-w-md mx-auto space-y-2 pointer-events-none"></div>
+    <div id="liveToastContainer" class="fixed top-3 left-3 right-3 z-[9999] max-w-md mx-auto space-y-2.5 pointer-events-none"></div>
 
     <header class="glass-header sticky top-0 z-50 shadow-lg">
-        <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center gap-4">
-            <div class="flex items-center gap-1.5">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 <div class="flex items-center gap-1 bg-slate-800/80 border border-slate-700/80 rounded-xl p-0.5 shadow-inner">
                     <button onclick="changeLanguage('ar')" id="lang-ar" class="px-2 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">العربية</button>
                     <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">FR</button>
                     <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth">EN</button>
                 </div>
-                <button onclick="enableBrowserNotifications()" id="notifPermBtn" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-[11px] font-bold px-2.5 py-1 rounded-xl border border-emerald-500/30 transition-smooth flex items-center gap-1" title="تفعيل إشعارات الهاتف">
-                    <i class="fa-solid fa-bell"></i> <span id="notifBtnText">تفعيل الإشعارات</span>
+                <button onclick="testAndEnableNotifications()" id="notifPermBtn" class="bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl border border-emerald-500/40 transition-smooth flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-bell animate-pulse"></i> <span id="notifBtnText">تفعيل وتجربة الإشعار</span>
                 </button>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5">
                 <button onclick="logoutAdmin()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs font-bold px-2.5 py-1.5 rounded-xl border border-rose-900/50 transition-smooth" title="تسجيل الخروج">
                     <i class="fa-solid fa-power-off"></i>
                 </button>
-                <div class="text-left">
+                <div class="text-left hidden sm:block">
                     <h1 class="text-sm font-black tracking-wide text-white">لوحة تحكم البائع</h1>
                 </div>
                 <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-xl shadow-md object-cover flex-shrink-0 border border-slate-700" onerror="this.src='https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=100';">
@@ -412,61 +412,57 @@
         let currentFilter = 'pending';
         let editingColorId = null;
         let currentOrderItems = [{ productId: '', qty: 1 }];
+
         let knownDeliveredIds = new Set();
+        let knownRefusedIds = new Set();
+        let knownCustomerOrderIds = new Set();
         let initialLoadComplete = false;
+        let globalAudioCtx = null;
 
-        // ==================== نظام الإشعارات والصوت الفوري ====================
-        function updateNotifButtonUI() {
-            const btn = document.getElementById('notifPermBtn');
-            const txt = document.getElementById('notifBtnText');
-            if (!btn || !txt) return;
-            if ("Notification" in window && Notification.permission === "granted") {
-                txt.textContent = "الإشعارات مفعلة";
-                btn.className = "bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-xl border border-emerald-500/30 flex items-center gap-1";
-            }
-        }
-
-        function enableBrowserNotifications() {
-            playSuccessChime(); // فتح قناة الصوت في متصفح الهاتف
-            if (!("Notification" in window)) {
-                showInPageToast("تنبيه", "متصفحك يدعم الإشعارات الصوتية والمرئية داخل الصفحة فقط.");
-                return;
-            }
-            Notification.requestPermission().then(permission => {
-                updateNotifButtonUI();
-                if (permission === "granted") {
-                    showInPageToast("✅ تم تفعيل الإشعارات", "ستصلك إشعارات فورية مع صوت تنبيه فور تسليم أي طلب!");
-                }
-            });
-        }
-
-        // توليد نغمة تنبيه واضحة عبر Web Audio API (تعمل دائماً بدون إنترنت أو ملفات خارجية)
-        function playSuccessChime() {
+        // ==================== نظام الصوت والإشعارات المضمون ====================
+        function unlockAudioContext() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                const ctx = new AudioCtx();
-                const now = ctx.currentTime;
-
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-                    gain.gain.setValueAtTime(0.25, now + idx * 0.12);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.35);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now + idx * 0.12);
-                    osc.stop(now + idx * 0.12 + 0.35);
-                });
+                if (!globalAudioCtx) globalAudioCtx = new AudioCtx();
+                if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
             } catch (e) {}
         }
 
-        function showInPageToast(title, bodyText) {
+        // فتح قناة الصوت تلقائياً مع أول لمسة للشاشة في الهاتف
+        document.addEventListener('touchstart', unlockAudioContext, { once: true });
+        document.addEventListener('click', unlockAudioContext, { once: true });
+
+        function playAlertSound() {
+            try {
+                unlockAudioContext();
+                if (!globalAudioCtx) return;
+                const now = globalAudioCtx.currentTime;
+                const notes = [587.33, 783.99, 987.77, 1174.66]; // نغمة جرس واضحة وعالية
+                notes.forEach((freq, idx) => {
+                    const osc = globalAudioCtx.createOscillator();
+                    const gain = globalAudioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.13);
+                    gain.gain.setValueAtTime(0.35, now + idx * 0.13);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.13 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(globalAudioCtx.destination);
+                    osc.start(now + idx * 0.13);
+                    osc.stop(now + idx * 0.13 + 0.4);
+                });
+            } catch (e) {}
+
+            // تشغيل اهتزاز الهاتف إن كان مدعوماً
+            if (navigator.vibrate) {
+                try { navigator.vibrate([250, 100, 250]); } catch (e) {}
+            }
+        }
+
+        function showTopBannerToast(title, bodyText, borderColor = 'border-emerald-500') {
             const container = document.getElementById('liveToastContainer');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = "toast-enter pointer-events-auto bg-slate-900/95 border-2 border-emerald-500 text-white p-4 rounded-2xl shadow-2xl flex items-start justify-between gap-3 backdrop-blur-md";
+            toast.className = `toast-enter pointer-events-auto bg-slate-900/95 border-2 ${borderColor} text-white p-4 rounded-2xl shadow-2xl flex items-start justify-between gap-3 backdrop-blur-md`;
             toast.innerHTML = `
                 <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg flex-shrink-0">
@@ -474,33 +470,73 @@
                     </div>
                     <div>
                         <h4 class="text-xs font-black text-emerald-400">${title}</h4>
-                        <p class="text-[11px] text-slate-200 font-bold mt-1 leading-relaxed">${bodyText}</p>
+                        <p class="text-[11px] text-slate-100 font-bold mt-1 leading-relaxed">${bodyText}</p>
                     </div>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-base font-bold px-1">&times;</button>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-lg font-black px-1.5">&times;</button>
             `;
             container.appendChild(toast);
-            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 8000);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 10000);
         }
 
-        function triggerDeliveryNotification(order) {
-            playSuccessChime();
-            const courierLabel = order.courierName || order.courierAssigned || 'اللفرور';
-            const title = `✅ تم تسليم طلب (${order.price} د.م)`;
-            const details = `المنتج: ${order.productName} | بواسطة: ${courierLabel} | 📍 ${order.address}`;
-
-            showInPageToast(title, details);
-
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    new Notification(title, {
-                        body: details,
-                        icon: "logo.png"
+        function sendSystemNotification(title, bodyText) {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            try {
+                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.showNotification(title, { body: bodyText, icon: 'logo.png', vibrate: [200, 100, 200] });
+                    }).catch(() => {
+                        new Notification(title, { body: bodyText, icon: 'logo.png' });
                     });
-                } catch (e) {}
+                } else {
+                    new Notification(title, { body: bodyText, icon: 'logo.png' });
+                }
+            } catch (e) {}
+        }
+
+        function testAndEnableNotifications() {
+            playAlertSound();
+            const txt = document.getElementById('notifBtnText');
+            if (txt) txt.textContent = "الإشعارات شغالة ✔";
+
+            showTopBannerToast(
+                "🔔 تجربة الإشعار ناجحة!",
+                "نظام الصوت والإشعارات يعمل الآن! سيصلك هذا التنبيه فور تسليم اللفرور لأي طلب."
+            );
+
+            if ("Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission().then(perm => {
+                    if (perm === "granted") {
+                        sendSystemNotification("✅ Simo Chop", "تم تفعيل إشعارات المتصفح بنجاح!");
+                    }
+                }).catch(() => {});
+            } else {
+                sendSystemNotification("✅ Simo Chop", "الإشعارات الصوتية والمرئية جاهزة وتعمل بنجاح!");
             }
         }
-        // ====================================================================
+
+        function triggerOrderEventNotification(order, type) {
+            playAlertSound();
+            const courierLabel = order.courierName || order.courierAssigned || 'اللفرور';
+
+            if (type === 'delivered') {
+                const title = `✅ تم تسليم طلب (${order.price} د.م)`;
+                const details = `المنتج: ${order.productName} | بواسطة: ${courierLabel} | 📍 ${order.address}`;
+                showTopBannerToast(title, details, 'border-emerald-500');
+                sendSystemNotification(title, details);
+            } else if (type === 'refused') {
+                const title = `❌ تم رفض طلب (${order.price} د.م)`;
+                const details = `المنتج: ${order.productName} | السبب: ${order.refusalReason || 'غير محدد'} | 📍 ${order.address}`;
+                showTopBannerToast(title, details, 'border-rose-500');
+                sendSystemNotification(title, details);
+            } else if (type === 'new_customer') {
+                const title = `🛒 طلب جديد من المتجر (${order.price} د.م)`;
+                const details = `الزبون: ${order.clientName || 'زبون'} | المنتج: ${order.productName} | 📍 ${order.address}`;
+                showTopBannerToast(title, details, 'border-amber-500');
+                sendSystemNotification(title, details);
+            }
+        }
+        // =======================================================================
 
         function sanitizeImgPath(img, itemName = '') {
             if (!img || img.startsWith('http') || img.length > 35) {
@@ -537,9 +573,11 @@
                 item.img = sanitizeImgPath(item.img, item.name);
             });
 
-            // تسجيل الطلبات المسلمة مسبقاً لعدم تكرار إشعاراتها عند فتح الصفحة
+            // حفظ حالة الطلبات الحالية عند أول فتح للصفحة
             orders.forEach(o => {
                 if (o.status === 'delivered') knownDeliveredIds.add(o.id);
+                if (o.status === 'refused') knownRefusedIds.add(o.id);
+                if (o.status === 'pending_seller') knownCustomerOrderIds.add(o.id);
             });
             initialLoadComplete = true;
 
@@ -547,7 +585,6 @@
                 currentOrderItems[0].productId = colors[0].id;
             }
 
-            updateNotifButtonUI();
             updateCategorySelects();
             renderOrderItems();
             renderSellerOrders();
@@ -556,43 +593,55 @@
             updateSellerStats();
         }
 
+        // فحص دوري تلقائي كل 3 ثوانٍ لاكتشاف أي طلب تم تسليمه أو رفضه أو إضافته فوراً
+        async function pollOrderUpdates() {
+            if (!initialLoadComplete) return;
+            try {
+                const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
+                if (!data || !data.payload) return;
+
+                const incomingOrders = data.payload.orders || [];
+                let hasChanges = false;
+
+                incomingOrders.forEach(o => {
+                    if (o.status === 'delivered' && !knownDeliveredIds.has(o.id)) {
+                        knownDeliveredIds.add(o.id);
+                        triggerOrderEventNotification(o, 'delivered');
+                        hasChanges = true;
+                    }
+                    if (o.status === 'refused' && !knownRefusedIds.has(o.id)) {
+                        knownRefusedIds.add(o.id);
+                        triggerOrderEventNotification(o, 'refused');
+                        hasChanges = true;
+                    }
+                    if (o.status === 'pending_seller' && !knownCustomerOrderIds.has(o.id)) {
+                        knownCustomerOrderIds.add(o.id);
+                        triggerOrderEventNotification(o, 'new_customer');
+                        hasChanges = true;
+                    }
+                });
+
+                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders)) {
+                    orders = incomingOrders;
+                    if (data.payload.colors) {
+                        colors = data.payload.colors;
+                        colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
+                    }
+                    renderSellerOrders();
+                    renderCustomerOrders();
+                    renderInventoryList();
+                    updateSellerStats();
+                }
+            } catch (e) {}
+        }
+
+        // تشغيل الفحص التلقائي كل 3 ثوانٍ
+        setInterval(pollOrderUpdates, 3000);
+
         async function saveAllToSupabase() {
             const payload = { orders, colors, categories, courierDebt };
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
-
-        // الاستماع الفوري لأي تحديث من صفحة اللفرور أو المتجر
-        sb.channel('public:app_state_seller_realtime_alerts')
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.simo_store_data' }, payload => {
-              if (payload.new && payload.new.payload) {
-                  const incomingOrders = payload.new.payload.orders || [];
-
-                  if (initialLoadComplete) {
-                      incomingOrders.forEach(o => {
-                          if (o.status === 'delivered' && !knownDeliveredIds.has(o.id)) {
-                              knownDeliveredIds.add(o.id);
-                              triggerDeliveryNotification(o);
-                          }
-                      });
-                  }
-
-                  orders = incomingOrders;
-                  colors = payload.new.payload.colors || DEFAULT_COLORS;
-                  categories = payload.new.payload.categories || DEFAULT_CATEGORIES;
-                  courierDebt = payload.new.payload.courierDebt || 0;
-
-                  colors.forEach(item => {
-                      item.img = sanitizeImgPath(item.img, item.name);
-                  });
-
-                  updateCategorySelects();
-                  renderSellerOrders();
-                  renderCustomerOrders();
-                  renderInventoryList();
-                  updateSellerStats();
-              }
-          })
-          .subscribe();
 
         loadDataFromSupabase();
 
