@@ -133,6 +133,7 @@
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
         let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         let orders = [];
+        let counters = {};
         let selectedCategory = 'parasols';
 
         // دالة ذكية لتصحيح وصياغة اسم الصورة لتعمل دائماً بشكل صحيح
@@ -161,6 +162,7 @@
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || DEFAULT_COLORS;
                     categories = data.payload.categories || DEFAULT_CATEGORIES;
+                    counters = data.payload.counters || {};
                 }
             } catch (e) {}
 
@@ -186,6 +188,7 @@
                   orders = payload.new.payload.orders || [];
                   colors = payload.new.payload.colors || DEFAULT_COLORS;
                   categories = payload.new.payload.categories || DEFAULT_CATEGORIES;
+                  counters = payload.new.payload.counters || counters;
 
                   colors.forEach(item => {
                       item.img = sanitizeImgPath(item.img, item.name);
@@ -289,6 +292,33 @@
             document.getElementById('customerOrderForm').scrollIntoView({ behavior: 'smooth' });
         }
 
+
+        // ترقيم الطلبات حسب نوع المنتج: Paras للمظلات، manet للمانيطات
+        function orderIdPrefixForItems(items) {
+            const counts = {};
+            let firstCat = 'other';
+            items.forEach((item, idx) => {
+                const prod = colors.find(c => c.id === item.productId);
+                const cat = (prod && prod.category) || 'other';
+                if (idx === 0) firstCat = cat;
+                counts[cat] = (counts[cat] || 0) + (item.qty || 1);
+            });
+            let dominant = firstCat;
+            let best = -1;
+            Object.keys(counts).forEach(cat => {
+                if (counts[cat] > best) { best = counts[cat]; dominant = cat; }
+            });
+            if (dominant === 'parasols') return 'Paras';
+            if (dominant === 'controllers') return 'manet';
+            return 'Cmd';
+        }
+
+        function nextOrderId(items) {
+            const prefix = orderIdPrefixForItems(items);
+            counters[prefix] = (counters[prefix] || 0) + 1;
+            return prefix + counters[prefix];
+        }
+
         document.getElementById('customerOrderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             let selectedItems = [];
@@ -316,7 +346,7 @@
             });
 
             const newOrder = {
-                id: 'ORD_' + Date.now(),
+                id: nextOrderId(selectedItems),
                 productName: summaryParts.join(' + '),
                 items: selectedItems,
                 quantity: selectedItems.reduce((sum, i) => sum + i.qty, 0),
@@ -330,7 +360,7 @@
             };
 
             orders.unshift(newOrder);
-            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors, categories } });
+            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors, categories, counters } });
 
             document.getElementById('success-modal').classList.remove('hidden');
             document.getElementById('customerOrderForm').reset();
