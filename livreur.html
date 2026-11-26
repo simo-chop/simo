@@ -30,7 +30,8 @@
     </div>
     <script>
         (function () {
-            var CODES = { '1111': 1, '2222': 2 };
+            var SB_URL = "https://odrqwpcwcdfftjxatkyx.supabase.co";
+            var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcnF3cGN3Y2RmZnRqeGF0a3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNjA2MzAsImV4cCI6MjEwNzkzNjYzMH0.Fvjz335UThZ0OfnwpdKCoO2Zg_WQA8jinFJnGV4CrB0";
             var slot = localStorage.getItem('COURIER_SLOT');
             var name = localStorage.getItem('COURIER_NAME');
             if ((slot === '1' || slot === '2') && name) return;
@@ -39,13 +40,21 @@
                 e.preventDefault();
                 var n = document.getElementById('gateName').value.trim();
                 var c = document.getElementById('gateCode').value.trim();
-                if (n && CODES[c]) {
-                    localStorage.setItem('COURIER_NAME', n);
-                    localStorage.setItem('COURIER_SLOT', String(CODES[c]));
-                    location.reload();
-                } else {
-                    document.getElementById('gateErr').style.display = 'block';
-                }
+                var err = document.getElementById('gateErr');
+                if (!n || !c) { err.style.display = 'block'; return; }
+                fetch(SB_URL + '/rest/v1/rpc/check_livreur_code', {
+                    method: 'POST',
+                    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ p_code: c })
+                }).then(function (r) { return r.json(); }).then(function (s) {
+                    if (s === 1 || s === 2) {
+                        localStorage.setItem('COURIER_NAME', n);
+                        localStorage.setItem('COURIER_SLOT', String(s));
+                        location.reload();
+                    } else {
+                        err.style.display = 'block';
+                    }
+                }).catch(function () { err.style.display = 'block'; });
             });
         })();
     </script>
