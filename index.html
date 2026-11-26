@@ -169,11 +169,6 @@
                                 <textarea id="clientAddress" required rows="2" placeholder="الحي، الشارع، رقم المنزل..."
                                     class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs bg-slate-900 text-white focus:outline-none"></textarea>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-300 mb-1.5">مصاريف التوصيل</label>
-                                <input type="number" id="orderDeliveryFee" required value="20" placeholder="20"
-                                    class="w-full px-3.5 py-3 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:outline-none">
-                            </div>
                             <button type="submit"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-paper-plane"></i> <span>إرسال للفرور المحدد</span>
@@ -924,7 +919,6 @@
                 phone: document.getElementById('clientPhone').value.trim(),
                 address: document.getElementById('clientAddress').value.trim(),
                 price: parseFloat(document.getElementById('orderPrice').value) || 0,
-                deliveryFee: parseFloat(document.getElementById('orderDeliveryFee').value) || 20,
                 status: 'pending',
                 courierAssigned: assignedCourier,
                 refusalReason: '',
@@ -937,7 +931,6 @@
             orders.unshift(newOrder);
             document.getElementById('orderForm').reset();
             currentOrderItems = [{ productId: colors.length > 0 ? colors[0].id : '', qty: 1 }];
-            document.getElementById('orderDeliveryFee').value = '20';
             renderOrderItems();
             saveAllToSupabase();
             renderSellerOrders();
@@ -989,6 +982,17 @@
             updateSellerStats();
         }
 
+        // قاعدة ثمن التوصيل: حسب عدد التسليمات في اليوم كامل (توقيت المغرب): 1 = 30 ، 2 = 25 لكل وحدة ، 3 فما فوق = 20 لكل وحدة
+        function moroccoDayKey(ts) {
+            return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Number(ts)));
+        }
+        function tierFee(n) { return n <= 0 ? 0 : (n === 1 ? 30 : (n === 2 ? 25 : 20)); }
+        function buildFeeMap(deliveredList) {
+            const counts = {};
+            deliveredList.forEach(o => { if (o.deliveredAt) { const k = moroccoDayKey(o.deliveredAt); counts[k] = (counts[k] || 0) + 1; } });
+            return o => o.deliveredAt ? tierFee(counts[moroccoDayKey(o.deliveredAt)]) : 20;
+        }
+
         function updateSellerStats() {
             const pendingCount = orders.filter(o => o.status === 'pending').length;
             const scheduledCount = orders.filter(o => o.status === 'scheduled').length;
@@ -998,9 +1002,10 @@
             const localSettled = parseInt(localStorage.getItem(`SETTLED_TIME_simo_tanger`) || '0');
             const settledTime = Math.max(courierDebt || 0, localSettled);
 
+            const feeOf = buildFeeMap(deliveredOrders);
             const unsettledToday = deliveredOrders.filter(o => (o.deliveredAt || 0) > settledTime);
             const unsettledRevenue = unsettledToday.reduce((sum, o) => sum + Number(o.price), 0);
-            const unsettledDelivery = unsettledToday.reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
+            const unsettledDelivery = unsettledToday.reduce((sum, o) => sum + feeOf(o), 0);
             const courierRemainingMoney = unsettledRevenue - unsettledDelivery;
 
             if(document.getElementById('statPending')) document.getElementById('statPending').textContent = pendingCount;
@@ -1010,7 +1015,7 @@
             if(document.getElementById('statRevenue')) document.getElementById('statRevenue').textContent = courierRemainingMoney.toLocaleString();
 
             const dailyRevenue = deliveredOrders.filter(o => (o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '') === new Date().toDateString()).reduce((sum, o) => sum + Number(o.price), 0);
-            const dailyDeliveryFees = deliveredOrders.filter(o => (o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '') === new Date().toDateString()).reduce((sum, o) => sum + Number(o.deliveryFee || 20), 0);
+            const dailyDeliveryFees = deliveredOrders.filter(o => (o.deliveredAt ? new Date(o.deliveredAt).toDateString() : '') === new Date().toDateString()).reduce((sum, o) => sum + feeOf(o), 0);
 
             if(document.getElementById('statNetRevenue')) document.getElementById('statNetRevenue').textContent = (dailyRevenue - dailyDeliveryFees).toLocaleString();
             if(document.getElementById('statDeliveryFees')) document.getElementById('statDeliveryFees').textContent = dailyDeliveryFees.toLocaleString();
