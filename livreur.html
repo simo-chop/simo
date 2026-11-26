@@ -89,21 +89,6 @@
     </div>
 
     <script>
-        // ==================== إعدادات الإشعارات الصامتة NTFY ====================
-        const NTFY_ADMIN_TOPIC = 'simo_chop_admin_9988'; // نفس القناة المشترك بها في هاتفك
-
-        function notifyAdminSilently(message, tags = 'motorcycle', priority = 'urgent') {
-            fetch(`https://ntfy.sh/${NTFY_ADMIN_TOPIC}`, {
-                method: 'POST',
-                body: message,
-                headers: {
-                    'Title': 'Simo-Chop Livreur',
-                    'Priority': priority,
-                    'Tags': tags
-                }
-            }).catch(() => {}); // صامت تماماً بدون أي أخطاء في المتصفح
-        }
-        // =========================================================================
 
         const translations = {
             ar: {
@@ -342,12 +327,6 @@
                 });
             }
 
-            // إرسال إشعار فوري وصامت لهاتفك عبر ntfy
-            notifyAdminSilently(
-                `✅ تم تسليم طلب بنجاح!\n👤 بواسطة: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n💰 المبلغ: ${order.price} د.م\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
-                'white_check_mark,moneybag',
-                'urgent'
-            );
 
             renderCourierOrders();
             await saveCourierData();
@@ -373,12 +352,6 @@
                 order.deliveredAt = Date.now();
                 order.courierName = defaultCourierName;
 
-                // إرسال إشعار فوري وصامت لهاتفك عند الرفض
-                notifyAdminSilently(
-                    `❌ تم رفض استلام طلب!\n👤 اللفرور: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n❓ السبب: ${reason || 'غير محدد'}\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
-                    'x,warning',
-                    'urgent'
-                );
 
                 closeRefuseModal();
                 renderCourierOrders();
@@ -408,12 +381,6 @@
                 order.scheduledTime = sTime;
                 order.courierName = defaultCourierName;
 
-                // إرسال إشعار فوري وصامت لهاتفك عند الجدولة
-                notifyAdminSilently(
-                    `📅 تمت جدولة طلب لموعد آخر!\n👤 اللفرور: ${defaultCourierName}\n📦 المنتج: ${order.productName}\n⏰ الموعد: ${sDate} الساعة ${sTime}\n📍 العنوان: ${order.address}\n📞 الزبون: ${order.phone}`,
-                    'calendar,clock3',
-                    'high'
-                );
 
                 closeScheduleModal();
                 renderCourierOrders();
