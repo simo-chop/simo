@@ -47,21 +47,25 @@
     </div>
 
     <script>
-        // يمكنك تغيير اسم المستخدم وكلمة المرور من هنا كما تشاء
-        const ADMIN_USER = "simo";
-        const ADMIN_PASS = "121206az";
+        const SB_URL = "https://odrqwpcwcdfftjxatkyx.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcnF3cGN3Y2RmZnRqeGF0a3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNjA2MzAsImV4cCI6MjEwNzkzNjYzMH0.Fvjz335UThZ0OfnwpdKCoO2Zg_WQA8jinFJnGV4CrB0";
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-
-            if (u === ADMIN_USER && p === ADMIN_PASS) {
-                localStorage.setItem('SIMO_LOGGED_IN', 'true');
-                window.location.href = 'index.html';
-            } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
-            }
+            fetch(SB_URL + '/rest/v1/rpc/check_admin_login', {
+                method: 'POST',
+                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ p_user: u, p_pass: p })
+            }).then(r => r.json()).then(ok => {
+                if (ok === true) {
+                    localStorage.setItem('SIMO_LOGGED_IN', 'true');
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('errorMsg').classList.remove('hidden');
+                }
+            }).catch(() => document.getElementById('errorMsg').classList.remove('hidden'));
         });
     </script>
 </body>
