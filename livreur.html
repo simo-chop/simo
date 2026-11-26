@@ -379,7 +379,7 @@
 
             order.status = 'delivered';
             order.deliveredAt = Date.now();
-            order.courierName = defaultCourierName;
+            order.courierName = courierTypedName || defaultCourierName;
 
             // خصم الكمية من المخزون عند التسليم
             if (order.items && Array.isArray(order.items)) {
