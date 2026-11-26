@@ -1,69 +1,11 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simo Chop - تسجيل دخول اللفرور</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #090d16; color: #f1f5f9; min-height: 100vh; }
-        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simo Chop - Livreur</title>
+<meta http-equiv="refresh" content="0; url=livreur.html">
+<script>window.location.replace('livreur.html');</script>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-
-    <div class="glass-panel w-full max-w-md rounded-3xl p-8 space-y-6">
-        <div class="text-center space-y-2">
-            <div class="bg-emerald-500/20 text-emerald-400 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg text-2xl mx-auto">
-                🛵
-            </div>
-            <h1 class="text-lg font-black text-white">تسجيل دخول اللفرور</h1>
-            <p class="text-xs text-slate-400">أدخل اسمك وكلمة المرور للبدء</p>
-        </div>
-
-        <form id="courierLoginForm" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1.5">اسم اللفرور (Username) *</label>
-                <input type="text" id="courierUser" required placeholder="مثال: Youssef"
-                    class="w-full px-4 py-3.5 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-smooth" dir="ltr">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1.5">كلمة المرور (Password) *</label>
-                <input type="password" id="courierPass" required placeholder="••••••••"
-                    class="w-full px-4 py-3.5 rounded-xl border border-slate-700 text-xs font-bold bg-slate-900 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-smooth" dir="ltr">
-            </div>
-            
-            <div id="courierErrorMsg" class="text-rose-400 text-xs font-bold text-center hidden">
-                المرجو التأكد من إدخال اسم المستخدم وكلمة المرور الصحيحة!
-            </div>
-
-            <button type="submit"
-                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
-                <i class="fa-solid fa-right-to-bracket"></i> <span>دخول لصفحة اللفرور</span>
-            </button>
-        </form>
-    </div>
-
-    <script>
-        // كلمة المرور الموحدة الخاصة باللفرور (يمكنك تغييرها هنا متى شئت)
-        const FIXED_COURIER_PASS = "1111";
-
-        document.getElementById('courierLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const usernameInput = document.getElementById('courierUser').value.trim();
-            const passwordInput = document.getElementById('courierPass').value.trim();
-
-            if (usernameInput !== "" && passwordInput === FIXED_COURIER_PASS) {
-                // حفظ حالة الدخول واسم المستخدم لكي يعتمده النظام تلقائياً
-                localStorage.setItem('COURIER_LOGGED_IN', 'true');
-                localStorage.setItem('COURIER_USERNAME', usernameInput);
-                window.location.href = 'livreur.html';
-            } else {
-                document.getElementById('courierErrorMsg').classList.remove('hidden');
-            }
-        });
-    </script>
-</body>
+<body><a href="livreur.html">livreur.html</a></body>
 </html>
