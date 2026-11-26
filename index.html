@@ -927,7 +927,7 @@
 
         function nextOrderId(items) {
             const prefix = orderIdPrefixForItems(items);
-            counters[prefix] = (counters[prefix] || 0) + 1;
+            counters[prefix] = (counters[prefix] || 10000) + 1;
             return prefix + counters[prefix];
         }
 
