@@ -16,6 +16,39 @@
     </style>
 </head>
 <body class="min-h-screen pb-20 text-slate-100">
+    <!-- بوابة التفعيل: الاسم + الكود (أول مرة فقط) -->
+    <div id="gateOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#0b0f19;align-items:center;justify-content:center;padding:16px;">
+        <form id="gateForm" style="width:100%;max-width:340px;background:#111827;border:1px solid #334155;border-radius:20px;padding:24px;">
+            <h2 style="font-weight:900;font-size:18px;text-align:center;margin-bottom:16px;color:#fff;">Simo Chop - Livreur</h2>
+            <label style="display:block;font-size:12px;font-weight:700;color:#cbd5e1;margin-bottom:6px;">الاسم / Nom</label>
+            <input id="gateName" type="text" autocomplete="off" required style="width:100%;padding:10px 12px;border-radius:12px;background:#0b0f19;border:1px solid #475569;color:#fff;margin-bottom:12px;">
+            <label style="display:block;font-size:12px;font-weight:700;color:#cbd5e1;margin-bottom:6px;">كود التفعيل / Code d'activation</label>
+            <input id="gateCode" type="password" inputmode="numeric" autocomplete="off" required style="width:100%;padding:10px 12px;border-radius:12px;background:#0b0f19;border:1px solid #475569;color:#fff;margin-bottom:12px;">
+            <div id="gateErr" style="display:none;color:#fb7185;font-size:12px;font-weight:700;text-align:center;margin-bottom:10px;">الكود غير صحيح / Code incorrect</div>
+            <button type="submit" style="width:100%;padding:11px;border-radius:12px;background:#4f46e5;color:#fff;font-weight:800;">دخول / Entrer</button>
+        </form>
+    </div>
+    <script>
+        (function () {
+            var CODES = { '1111': 1, '2222': 2 };
+            var slot = localStorage.getItem('COURIER_SLOT');
+            var name = localStorage.getItem('COURIER_NAME');
+            if ((slot === '1' || slot === '2') && name) return;
+            document.getElementById('gateOverlay').style.display = 'flex';
+            document.getElementById('gateForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var n = document.getElementById('gateName').value.trim();
+                var c = document.getElementById('gateCode').value.trim();
+                if (n && CODES[c]) {
+                    localStorage.setItem('COURIER_NAME', n);
+                    localStorage.setItem('COURIER_SLOT', String(CODES[c]));
+                    location.reload();
+                } else {
+                    document.getElementById('gateErr').style.display = 'block';
+                }
+            });
+        })();
+    </script>
 
     <!-- الهيدر العلوي المطابق للتصميم الأصلي -->
     <header class="header-bg sticky top-0 z-50">
@@ -145,15 +178,22 @@
         };
 
         // تحديد ما إذا كانت الصفحة هي liv.html (لفرور 2) أو livreur.html (لفرور 1)
-        const isLiv2 = window.location.pathname.includes('liv.html');
-        const defaultCourierName = isLiv2 ? 'لفرور 2 (liv)' : (localStorage.getItem('COURIER_NAME') || 'لفرور 1 (سيمو)');
-        document.getElementById('courierDisplayName').textContent = defaultCourierName;
+        const courierSlot = localStorage.getItem('COURIER_SLOT');
+        const courierTypedName = localStorage.getItem('COURIER_NAME');
+        if ((courierSlot !== '1' && courierSlot !== '2') || !courierTypedName) {
+            throw new Error('locked'); // البوابة ظاهرة، نوقفو الصفحة حتى يدخل الكود
+        }
+        const isLiv2 = courierSlot === '2';
+        const defaultCourierName = isLiv2 ? 'لفرور 2 (liv)' : 'لفرور 1 (سيمو)';
+        document.getElementById('courierDisplayName').textContent = courierTypedName;
 
         let currentLang = localStorage.getItem('COURIER_LANG') || 'fr';
 
         function logoutCourier() {
+            localStorage.removeItem('COURIER_SLOT');
+            localStorage.removeItem('COURIER_NAME');
             localStorage.removeItem('COURIER_LOGGED_IN');
-            window.location.href = 'login-livreur.html';
+            window.location.reload();
         }
 
         function changeLanguage(lang) {
@@ -226,9 +266,7 @@
         }
 
         function buildWhatsAppLink(order) {
-            const rawName = (document.getElementById('courierDisplayName') || {}).textContent || defaultCourierName;
-            const m = rawName.match(/\(([^)]+)\)/);
-            const courier = m ? m[1] : rawName;
+            const courier = courierTypedName;
             const qty = order.quantity || 1;
             let product = String(order.productName || '');
             if (product.indexOf('العدد') === -1) product += ' (العدد: ' + qty + ')';
