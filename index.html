@@ -430,6 +430,7 @@
         let orders = [];
         let colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
         let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        let counters = {};
         let courierDebt = 0; // يحفظ وقت آخر تصفير للحساب في Supabase
         let currentFilter = 'pending';
         let editingColorId = null;
@@ -561,6 +562,7 @@
                     colors = data.payload.colors || DEFAULT_COLORS;
                     categories = data.payload.categories || DEFAULT_CATEGORIES;
                     courierDebt = data.payload.courierDebt || 0;
+                    counters = data.payload.counters || {};
                 }
             } catch (e) {}
 
@@ -620,6 +622,7 @@
                 if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0)) {
                     orders = incomingOrders;
                     courierDebt = data.payload.courierDebt || 0;
+                    if (data.payload.counters) counters = data.payload.counters;
                     if (data.payload.colors) {
                         colors = data.payload.colors;
                         colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
@@ -635,7 +638,7 @@
         setInterval(pollOrderUpdates, 3000);
 
         async function saveAllToSupabase() {
-            const payload = { orders, colors, categories, courierDebt };
+            const payload = { orders, colors, categories, courierDebt, counters };
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
 
@@ -901,6 +904,33 @@
             if (priceInput) priceInput.value = total;
         }
 
+
+        // ترقيم الطلبات حسب نوع المنتج: Paras للمظلات، manet للمانيطات
+        function orderIdPrefixForItems(items) {
+            const counts = {};
+            let firstCat = 'other';
+            items.forEach((item, idx) => {
+                const prod = colors.find(c => c.id === item.productId);
+                const cat = (prod && prod.category) || 'other';
+                if (idx === 0) firstCat = cat;
+                counts[cat] = (counts[cat] || 0) + (item.qty || 1);
+            });
+            let dominant = firstCat;
+            let best = -1;
+            Object.keys(counts).forEach(cat => {
+                if (counts[cat] > best) { best = counts[cat]; dominant = cat; }
+            });
+            if (dominant === 'parasols') return 'Paras';
+            if (dominant === 'controllers') return 'manet';
+            return 'Cmd';
+        }
+
+        function nextOrderId(items) {
+            const prefix = orderIdPrefixForItems(items);
+            counters[prefix] = (counters[prefix] || 0) + 1;
+            return prefix + counters[prefix];
+        }
+
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
             let productSummaryParts = [];
@@ -912,7 +942,7 @@
             const assignedCourier = document.getElementById('assignCourier').value;
 
             const newOrder = {
-                id: 'ORD_' + Date.now(),
+                id: nextOrderId(currentOrderItems),
                 productName: productSummaryParts.join(' + ') || 'منتجات متعددة',
                 items: JSON.parse(JSON.stringify(currentOrderItems)),
                 quantity: currentOrderItems.reduce((sum, i) => sum + i.qty, 0),
