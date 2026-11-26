@@ -225,6 +225,21 @@
             return p;
         }
 
+        function buildWhatsAppLink(order) {
+            const rawName = (document.getElementById('courierDisplayName') || {}).textContent || defaultCourierName;
+            const m = rawName.match(/\(([^)]+)\)/);
+            const courier = m ? m[1] : rawName;
+            const qty = order.quantity || 1;
+            let product = String(order.productName || '');
+            if (product.indexOf('العدد') === -1) product += ' (العدد: ' + qty + ')';
+            const msg = '👋 السلام عليكم 👋\n\n' +
+                '🛵 معكم : *' + courier + '* اللفرور\n' +
+                '📦 كنتواصل معكم بخصوص الطلب ديالكم: *' + product + '*\n' +
+                '💵 المبلغ المستحق : *' + order.price + '* درهم\n' +
+                '📌 المرجو تأكيد عنوانكم : *' + (order.address || '') + '*';
+            return 'https://wa.me/' + formatWhatsAppPhone(order.phone) + '?text=' + encodeURIComponent(msg);
+        }
+
         function filterOrdersForThisPage(ordersList) {
             return ordersList.filter(o => {
                 if (o.status !== 'pending' && o.status !== 'scheduled') return false;
@@ -286,7 +301,7 @@
                             <span>📞</span>
                             <span>${order.phone}</span>
                         </a>
-                        <a href="https://wa.me/${formatWhatsAppPhone(order.phone)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-smooth">
+                        <a href="${buildWhatsAppLink(order)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-smooth">
                             <i class="fa-brands fa-whatsapp text-base"></i>
                             <span>${t.whatsappClient}</span>
                         </a>
