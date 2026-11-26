@@ -38,9 +38,6 @@
                     <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-300">FR</button>
                     <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg transition-smooth text-slate-300">EN</button>
                 </div>
-                <button onclick="testAndEnableNotifications()" id="notifPermBtn" class="bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl border border-emerald-500/40 transition-smooth flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-bell animate-pulse"></i> <span id="notifBtnText">تفعيل وتجربة الإشعار (ntfy)</span>
-                </button>
             </div>
             <div class="flex items-center gap-2.5">
                 <button onclick="logoutAdmin()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs font-bold px-2.5 py-1.5 rounded-xl border border-rose-900/50 transition-smooth" title="تسجيل الخروج">
@@ -378,21 +375,6 @@
     </div>
 
     <script>
-        // ==================== إعدادات NTFY ====================
-        const NTFY_ADMIN_TOPIC = 'simo_chop_admin_9988'; // اشترك في هذا الاسم داخل تطبيق ntfy على هاتفك
-
-        function sendNtfyNotification(topic, message, tags = 'bell', priority = 'high') {
-            fetch(`https://ntfy.sh/${topic}`, {
-                method: 'POST',
-                body: message,
-                headers: {
-                    'Title': 'Simo-Chop Alert',
-                    'Priority': priority,
-                    'Tags': tags
-                }
-            }).catch(() => {});
-        }
-        // ======================================================
 
         function logoutAdmin() {
             localStorage.removeItem('SIMO_LOGGED_IN');
@@ -519,31 +501,6 @@
             } catch (e) {}
         }
 
-        function testAndEnableNotifications() {
-            playAlertSound();
-            const txt = document.getElementById('notifBtnText');
-            if (txt) txt.textContent = "الإشعارات شغالة ✔";
-
-            sendNtfyNotification(
-                NTFY_ADMIN_TOPIC,
-                "🔔 تجربة إشعار ناجحة من لوحة تحكم Simo-Chop!\nالإشعارات مربوطة الآن بهاتفك بنجاح.",
-                "white_check_mark,bell",
-                "urgent"
-            );
-
-            showTopBannerToast(
-                "🔔 تم إرسال إشعار تجريبي إلى ntfy!",
-                `تأكد من اشتراكك في القناة (${NTFY_ADMIN_TOPIC}) داخل تطبيق ntfy على هاتفك.`
-            );
-
-            if ("Notification" in window && Notification.permission !== "granted") {
-                Notification.requestPermission().then(perm => {
-                    if (perm === "granted") {
-                        sendSystemNotification("✅ Simo Chop", "تم تفعيل إشعارات المتصفح بنجاح!");
-                    }
-                }).catch(() => {});
-            }
-        }
 
         function triggerOrderEventNotification(order, type) {
             playAlertSound();
@@ -564,7 +521,6 @@
                 const details = `الزبون: ${order.clientName || 'زبون'} | المنتج: ${order.productName} | 📍 ${order.address}`;
                 showTopBannerToast(title, details, 'border-amber-500');
                 sendSystemNotification(title, details);
-                sendNtfyNotification(NTFY_ADMIN_TOPIC, `${title}\n${details}\n📞 ${order.phone}`, 'shopping_cart,package', 'urgent');
             }
         }
 
