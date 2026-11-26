@@ -1016,6 +1016,13 @@
             if(document.getElementById('statDeliveryFees')) document.getElementById('statDeliveryFees').textContent = dailyDeliveryFees.toLocaleString();
         }
 
+        function formatDeliveryTime(ts) {
+            const d = new Date(Number(ts));
+            if (isNaN(d.getTime())) return '';
+            const pad = n => String(n).padStart(2, '0');
+            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
         function renderSellerOrders() {
             updateSellerStats();
             const container = document.getElementById('sellerOrdersList');
@@ -1032,7 +1039,8 @@
                     <div class="flex justify-between items-start gap-2 mb-2">
                         <div>
                             <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-1 rounded-xl">${order.productName}</span>
-                            ${order.courierAssigned ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-lg ml-1">👤 ${order.courierAssigned}</span>` : ''}
+                            ${order.status === 'delivered' && (order.courierName || order.courierAssigned) ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-lg ml-1">👤 ${order.courierName || order.courierAssigned}</span>` : (order.courierAssigned ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-lg ml-1">👤 ${order.courierAssigned}</span>` : '')}
+                            ${order.status === 'delivered' && order.deliveredAt ? `<span class="text-[10px] bg-slate-700/60 text-slate-300 font-bold px-2 py-0.5 rounded-lg ml-1" dir="ltr">📅 ${formatDeliveryTime(order.deliveredAt)}</span>` : ''}
                             <p class="font-bold text-slate-200 text-xs mt-2">📍 ${order.address}</p>
                             ${order.status === 'refused' && order.refusalReason ? `<p class="text-[11px] text-rose-400 font-bold mt-1">❌ سبب الرفض: ${order.refusalReason}</p>` : ''}
                             ${order.status === 'scheduled' && order.scheduledDate ? `<p class="text-[11px] text-sky-400 font-bold mt-1">📅 موعد الجدولة: ${order.scheduledDate} الساعة ${order.scheduledTime || ''}</p>` : ''}
