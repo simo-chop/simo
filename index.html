@@ -1061,7 +1061,7 @@
                 name: item.name,
                 qty: Number(stockSrc[item.id]) || 0,
                 hex: ((metaSrc[item.id] || {}).color) || stockTrackerHex(item)
-            })).filter(r => r.qty > 0);
+            }));
             const total = rows.reduce((a, r) => a + r.qty, 0);
             const W = 1080, headH = 330, rowH = 118, footH = 190;
             const H = headH + Math.max(rows.length, 1) * rowH + footH;
@@ -1092,8 +1092,8 @@
                 ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.font = '800 40px Cairo, sans-serif';
                 ctx.fillText(r.name, W - 50 - 110, y + 66);
                 // العدد
-                ctx.fillStyle = '#10b981'; lsiRoundRect(ctx, 80, y + 14, 150, 68, 20); ctx.fill();
-                ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.font = '900 46px Cairo, sans-serif';
+                ctx.fillStyle = r.qty > 0 ? '#10b981' : '#450a0a'; lsiRoundRect(ctx, 80, y + 14, 150, 68, 20); ctx.fill();
+                ctx.textAlign = 'center'; ctx.fillStyle = r.qty > 0 ? '#ffffff' : '#ef4444'; ctx.font = '900 46px Cairo, sans-serif';
                 ctx.fillText(String(r.qty), 155, y + 66);
                 y += rowH;
             });
