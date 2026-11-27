@@ -1047,8 +1047,27 @@
             renderSellerOrders();
         }
 
+        // الخصم الأوتوماتيكي من سطوك اللفرور بدا من 2026-11-27 05:00 UTC؛ الطلبات المسلمة قبلها كانت محسوبة في العد اليدوي
+        const LIVREUR_DEC_SINCE = 1795755600000;
+        function livreurDeductedFor(order) {
+            if (order.livreurStockDeducted === true) return true;
+            if (order.livreurStockDeducted === false) return false;
+            return Number(order.deliveredAt) >= LIVREUR_DEC_SINCE;
+        }
+
         function deleteOrder(id) {
             if (!confirm('هل تريد حذف هذا الطلب نهائياً؟')) return;
+            const order = orders.find(o => o.id === id);
+            // إلا كان الطلب مسلم وتنقص من سطوك اللفرور، رجع الكمية ليه مرة وحدة
+            if (order && order.status === 'delivered' && livreurDeductedFor(order) && order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    if (item.productId) {
+                        const curLv = Number(livreurStock[item.productId]) || 0;
+                        livreurStock[item.productId] = curLv + (item.qty || 1);
+                    }
+                });
+                order.livreurStockDeducted = false;
+            }
             orders = orders.filter(o => o.id !== id);
             saveAllToSupabase();
             renderSellerOrders();
