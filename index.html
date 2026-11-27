@@ -170,6 +170,7 @@
                                 <textarea id="clientAddress" required rows="2" placeholder="الحي، الشارع، رقم المنزل..."
                                     class="w-full px-4 py-3 rounded-xl border border-slate-700 text-xs bg-slate-900 text-white focus:outline-none"></textarea>
                             </div>
+                            <div id="order-stock-error" class="hidden text-rose-400 bg-rose-500/10 border border-rose-500/40 text-xs font-extrabold px-3.5 py-2.5 rounded-xl"></div>
                             <button type="submit"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-xl shadow-md transition-smooth active:scale-95 text-xs flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-paper-plane"></i> <span>إرسال للفرور المحدد</span>
@@ -671,6 +672,7 @@
                         colors = data.payload.colors;
                         colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
                     }
+                    renderOrderItems();
                     renderSellerOrders();
                     renderCustomerOrders();
                     renderInventoryList();
@@ -907,7 +909,7 @@
             container.innerHTML = currentOrderItems.map((item, index) => `
                 <div class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-700">
                     <select onchange="updateItemProduct(${index}, this.value)" class="flex-1 px-3 py-2 rounded-lg border border-slate-700 text-xs font-bold bg-slate-950 text-white focus:outline-none">
-                        ${colors.map(c => `<option value="${c.id}" ${c.id === item.productId ? 'selected' : ''}>${c.name} (${c.price} د.م)</option>`).join('')}
+                        ${colors.map(c => `<option value="${c.id}" ${c.id === item.productId ? 'selected' : ''}>${c.name} (${c.price} د.م) — سطوك اللفرور: ${Number(livreurStock[c.id]) || 0}</option>`).join('')}
                     </select>
                     <input type="number" min="1" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-16 px-2 py-2 rounded-lg border border-slate-700 text-xs font-bold bg-slate-950 text-white text-center focus:outline-none" placeholder="العدد">
                     ${currentOrderItems.length > 1 ? `<button type="button" onclick="removeOrderItemRow(${index})" class="text-rose-400 hover:text-rose-300 px-2 py-1 text-xs"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -938,6 +940,28 @@
             calculateOrderTotalPrice();
         }
 
+        function livreurStockProblems() {
+            const problems = [];
+            currentOrderItems.forEach(item => {
+                const product = colors.find(c => c.id === item.productId);
+                if (!product) return;
+                const available = Number(livreurStock[item.productId]) || 0;
+                const qty = item.qty || 1;
+                if (qty > available) problems.push({ name: product.name, available, qty });
+            });
+            return problems;
+        }
+
+        function renderOrderStockError() {
+            const el = document.getElementById('order-stock-error');
+            if (!el) return true;
+            const problems = livreurStockProblems();
+            if (problems.length === 0) { el.classList.add('hidden'); el.innerText = ''; return true; }
+            el.innerText = '⚠️ نفد من المخزون عند اللفرور: ' + problems.map(p => p.name + ' (المتوفر: ' + p.available + ')').join('، ') + ' — خاصك تعيط للفرور';
+            el.classList.remove('hidden');
+            return false;
+        }
+
         function calculateOrderTotalPrice() {
             let total = 0;
             currentOrderItems.forEach(item => {
@@ -946,6 +970,7 @@
             });
             const priceInput = document.getElementById('orderPrice');
             if (priceInput) priceInput.value = total;
+            renderOrderStockError();
         }
 
 
@@ -977,6 +1002,7 @@
 
         document.getElementById('orderForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            if (!renderOrderStockError()) return;
             let productSummaryParts = [];
             currentOrderItems.forEach(item => {
                 const product = colors.find(c => c.id === item.productId);
