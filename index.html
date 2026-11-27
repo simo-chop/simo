@@ -247,7 +247,6 @@
                 <div class="text-[10px] text-slate-400 font-semibold">سطوك الدار: تعديل يدوي بـ (+) و (-) ولا بالضغط على الرقم.</div>
             </div>
 
-            <div id="inventory-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
     </main>
 
@@ -1188,6 +1187,7 @@
         }
 
         function renderInventoryList() {
+            renderStockTrackers();
             const list = document.getElementById('inventory-list');
             if (!list) return;
             if (!colors || colors.length === 0) colors = JSON.parse(JSON.stringify(DEFAULT_COLORS));
@@ -1214,7 +1214,6 @@
                 </div>
             `;
             }).join('');
-            renderStockTrackers();
         }
 
         function openPriceModal(id) {
