@@ -69,15 +69,12 @@
     </header>
 
     <div class="max-w-6xl mx-auto px-4 mt-6">
-        <div class="bg-slate-800/60 border border-slate-700/60 p-1.5 rounded-2xl flex gap-1.5 max-w-md shadow-inner">
+        <div class="bg-slate-800/60 border border-slate-700/60 p-1.5 rounded-2xl flex gap-2 max-w-md shadow-inner">
             <button onclick="switchSellerTab('delivery')" id="stab-delivery" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm flex items-center justify-center gap-2">
                 <i class="fa-solid fa-truck-fast"></i> <span>إدارة التوصيل</span>
             </button>
-            <button onclick="switchSellerTab('livreur')" id="stab-livreur" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2">
-                <i class="fa-solid fa-motorcycle"></i> <span>عند اللفرور</span>
-            </button>
             <button onclick="switchSellerTab('inventory')" id="stab-inventory" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2">
-                <i class="fa-solid fa-boxes-stacked"></i> <span>المخزون والمنتجات</span>
+                <i class="fa-solid fa-boxes-stacked"></i> <span>السطوك</span>
             </button>
         </div>
     </div>
@@ -209,7 +206,8 @@
             </div>
         </section>
 
-        <section id="seller-tab-livreur" class="space-y-4 hidden">
+        <!-- إدارة المخزون والفئات والمنتجات -->
+        <section id="seller-tab-inventory" class="space-y-4 hidden">
             <!-- الطلبات لي عند اللفرور -->
             <div class="glass-panel p-5 rounded-3xl space-y-4">
                 <div class="flex items-center justify-between">
@@ -225,10 +223,7 @@
                     <button onclick="saveStockTrackerSection('livreur')" style="flex:2" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>حفظ</span> ✓</button>
                 </div>
             </div>
-        </section>
 
-        <!-- إدارة المخزون والفئات والمنتجات -->
-        <section id="seller-tab-inventory" class="space-y-4 hidden">
             <!-- السطوك لي عندي في الدار -->
             <div class="glass-panel p-5 rounded-3xl space-y-4">
                 <div class="flex items-center justify-between">
@@ -1043,7 +1038,7 @@
         });
 
         function switchSellerTab(tab) {
-            ['delivery', 'livreur', 'inventory'].forEach(t => {
+            ['delivery', 'inventory'].forEach(t => {
                 const el = document.getElementById(`seller-tab-${t}`);
                 const btn = document.getElementById(`stab-${t}`);
                 if (el) el.classList.toggle('hidden', t !== tab);
