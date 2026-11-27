@@ -361,7 +361,13 @@
             };
 
             orders.unshift(newOrder);
-            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: { orders, colors, categories, counters } });
+            const { data: curState } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
+            let currentPayload = curState && curState.payload ? curState.payload : {};
+            currentPayload.orders = orders;
+            currentPayload.colors = colors;
+            currentPayload.categories = categories;
+            currentPayload.counters = counters;
+            await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
 
             document.getElementById('success-modal').classList.remove('hidden');
             document.getElementById('customerOrderForm').reset();
