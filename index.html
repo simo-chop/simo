@@ -908,8 +908,8 @@
 
             container.innerHTML = currentOrderItems.map((item, index) => `
                 <div class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-700">
-                    <select onchange="updateItemProduct(${index}, this.value)" class="flex-1 px-3 py-2 rounded-lg border border-slate-700 text-xs font-bold bg-slate-950 text-white focus:outline-none">
-                        ${colors.map(c => `<option value="${c.id}" ${c.id === item.productId ? 'selected' : ''}>${c.name} (${c.price} د.م) — سطوك اللفرور: ${Number(livreurStock[c.id]) || 0}</option>`).join('')}
+                    <select onchange="updateItemProduct(${index}, this.value)" class="flex-1 min-w-0 max-w-full px-3 py-2 rounded-lg border border-slate-700 text-xs font-bold bg-slate-950 text-white focus:outline-none">
+                        ${colors.map(c => `<option value="${c.id}" ${c.id === item.productId ? 'selected' : ''}>${c.name} (${c.price} د.م)</option>`).join('')}
                     </select>
                     <input type="number" min="1" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-16 px-2 py-2 rounded-lg border border-slate-700 text-xs font-bold bg-slate-950 text-white text-center focus:outline-none" placeholder="العدد">
                     ${currentOrderItems.length > 1 ? `<button type="button" onclick="removeOrderItemRow(${index})" class="text-rose-400 hover:text-rose-300 px-2 py-1 text-xs"><i class="fa-solid fa-trash"></i></button>` : ''}
