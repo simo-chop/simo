@@ -207,22 +207,6 @@
 
         <!-- إدارة المخزون والفئات والمنتجات -->
         <section id="seller-tab-inventory" class="space-y-4 hidden">
-            <div class="flex flex-wrap items-center justify-between gap-3 glass-panel p-5 rounded-3xl">
-                <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-stacked text-indigo-400"></i> <span>إدارة المخزون والمنتجات</span>
-                </h2>
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <button onclick="openCategoryManagerModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
-                        <i class="fa-solid fa-folder-tree"></i> <span>إدارة وعرض الفئات</span>
-                    </button>
-                    <button onclick="openNewProductModal()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
-                        <i class="fa-solid fa-circle-plus"></i> <span>إضافة منتج جديد</span>
-                    </button>
-                    <button onclick="openRestockModal()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-smooth">
-                        <i class="fa-solid fa-dolly"></i> <span>إضافة شحنة واردة</span>
-                    </button>
-                </div>
-            </div>
             <!-- الطلبات لي عند اللفرور -->
             <div class="glass-panel p-5 rounded-3xl space-y-4">
                 <div class="flex items-center justify-between">
@@ -232,7 +216,11 @@
                     <div id="livreur-stock-total" class="bg-slate-800 text-white font-extrabold px-4 py-1.5 rounded-xl text-sm">0</div>
                 </div>
                 <div id="livreur-stock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-                <div class="text-[10px] text-slate-400 font-semibold">كينقص أوتوماتيكيا ملي كيتسلم أي طلب. تقدر تعدل يدويا بـ (+) و (-) ولا بالضغط على الرقم.</div>
+                <div class="text-[10px] text-slate-400 font-semibold">كينقص أوتوماتيكيا ملي كيتسلم أي طلب. تقدر تعدل يدويا بـ (+) و (-) ولا بالضغط على الرقم، ومن بعد اضغط حفظ.</div>
+                <div class="flex gap-3 pt-1">
+                    <button onclick="openStockSettings('livreur')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>تعديل</span> ⚙️</button>
+                    <button onclick="saveStockTrackerSection('livreur')" style="flex:2" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>حفظ</span> ✓</button>
+                </div>
             </div>
 
             <!-- السطوك لي عندي في الدار -->
@@ -244,11 +232,30 @@
                     <div id="home-stock-total" class="bg-slate-800 text-white font-extrabold px-4 py-1.5 rounded-xl text-sm">0</div>
                 </div>
                 <div id="home-stock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-                <div class="text-[10px] text-slate-400 font-semibold">سطوك الدار: تعديل يدوي بـ (+) و (-) ولا بالضغط على الرقم.</div>
+                <div class="text-[10px] text-slate-400 font-semibold">سطوك الدار: تعديل يدوي بـ (+) و (-) ولا بالضغط على الرقم، ومن بعد اضغط حفظ.</div>
+                <div class="flex gap-3 pt-1">
+                    <button onclick="openStockSettings('home')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>تعديل</span> ⚙️</button>
+                    <button onclick="saveStockTrackerSection('home')" style="flex:2" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>حفظ</span> ✓</button>
+                </div>
             </div>
 
         </section>
     </main>
+
+    <!-- نافذة تعديل مربعات وألوان السطوك -->
+    <div id="stock-settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 text-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-extrabold text-white" id="stock-settings-title">تعديل المربعات والألوان</h3>
+                <button onclick="closeStockSettings()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <div id="stock-settings-list" class="space-y-3"></div>
+            <div class="flex gap-2.5 pt-2">
+                <button onclick="resetStockSection()" class="px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 py-3 rounded-xl font-bold text-xs transition-smooth">تصفير الأرقام</button>
+                <button onclick="applyStockSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-smooth">تم (تطبيق التعديلات)</button>
+            </div>
+        </div>
+    </div>
 
     <!-- نافذة تعديل طلب الزبون -->
     <div id="edit-order-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
@@ -458,6 +465,9 @@
         let courierDebt = 0; // يحفظ وقت آخر تصفير للحساب في Supabase
         let livreurStock = {}; // الطلبات لي عند اللفرور
         let homeStock = {}; // السطوك لي عندي في الدار
+        let livreurStockMeta = {}; // ألوان مربعات سطوك اللفرور
+        let homeStockMeta = {}; // ألوان مربعات سطوك الدار
+        let stockDirty = { livreur: false, home: false }; // تعديلات لم تُحفظ بعد
         let currentFilter = 'pending';
         let editingColorId = null;
         let currentOrderItems = [{ productId: '', qty: 1 }];
@@ -591,6 +601,8 @@
                     counters = data.payload.counters || {};
                     livreurStock = data.payload.livreurStock || {};
                     homeStock = data.payload.homeStock || {};
+                    livreurStockMeta = data.payload.livreurStockMeta || {};
+                    homeStockMeta = data.payload.homeStockMeta || {};
                 }
             } catch (e) {}
 
@@ -647,12 +659,14 @@
                     }
                 });
 
-                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0) || JSON.stringify(livreurStock) !== JSON.stringify(data.payload.livreurStock || {}) || JSON.stringify(homeStock) !== JSON.stringify(data.payload.homeStock || {})) {
+                const livreurStockChanged = !stockDirty.livreur && JSON.stringify(livreurStock) !== JSON.stringify(data.payload.livreurStock || {});
+                const homeStockChanged = !stockDirty.home && JSON.stringify(homeStock) !== JSON.stringify(data.payload.homeStock || {});
+                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0) || livreurStockChanged || homeStockChanged) {
                     orders = incomingOrders;
                     courierDebt = data.payload.courierDebt || 0;
                     if (data.payload.counters) counters = data.payload.counters;
-                    if (data.payload.livreurStock) livreurStock = data.payload.livreurStock;
-                    if (data.payload.homeStock) homeStock = data.payload.homeStock;
+                    if (data.payload.livreurStock && !stockDirty.livreur) livreurStock = data.payload.livreurStock;
+                    if (data.payload.homeStock && !stockDirty.home) homeStock = data.payload.homeStock;
                     if (data.payload.colors) {
                         colors = data.payload.colors;
                         colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
@@ -668,7 +682,7 @@
         setInterval(pollOrderUpdates, 3000);
 
         async function saveAllToSupabase() {
-            const payload = { orders, colors, categories, courierDebt, counters, livreurStock, homeStock };
+            const payload = { orders, colors, categories, courierDebt, counters, livreurStock, homeStock, livreurStockMeta, homeStockMeta };
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
 
@@ -1144,7 +1158,7 @@
             grid.innerHTML = colors.map(item => {
                 const val = Number(stockObj[item.id]) || 0;
                 total += val;
-                const hex = stockTrackerHex(item);
+                const hex = ((stockMetaFor(kind)[item.id] || {}).color) || stockTrackerHex(item);
                 const isLight = (hex === '#ffffff' || hex === '#f5efe6');
                 const textColor = isLight ? '#111827' : '#ffffff';
                 return `
@@ -1165,15 +1179,15 @@
             const stockObj = kind === 'livreur' ? livreurStock : homeStock;
             const cur = Number(stockObj[id]) || 0;
             stockObj[id] = Math.max(0, cur + delta);
+            stockDirty[kind] = true;
             renderStockTrackers();
-            saveStockTrackers();
         }
 
         function setStockTracker(kind, id, val) {
             const stockObj = kind === 'livreur' ? livreurStock : homeStock;
             stockObj[id] = Math.max(0, parseInt(val) || 0);
+            stockDirty[kind] = true;
             renderStockTrackers();
-            saveStockTrackers();
         }
 
         async function saveStockTrackers() {
@@ -1182,8 +1196,85 @@
                 let currentPayload = data && data.payload ? data.payload : {};
                 currentPayload.livreurStock = livreurStock;
                 currentPayload.homeStock = homeStock;
+                currentPayload.livreurStockMeta = livreurStockMeta;
+                currentPayload.homeStockMeta = homeStockMeta;
                 await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
             } catch (e) {}
+        }
+
+        const STOCK_PALETTE = [
+            { name: 'أسود', hex: '#000000' },
+            { name: 'أخضر', hex: '#059669' },
+            { name: 'رمادي', hex: '#6b7280' },
+            { name: 'بيج', hex: '#f5efe6' },
+            { name: 'أبيض', hex: '#ffffff' },
+            { name: 'أزرق', hex: '#2563eb' },
+            { name: 'وردي', hex: '#db2777' }
+        ];
+        let stockSettingsKind = null;
+        let stockSettingsDraft = {};
+
+        function stockMetaFor(kind) { return kind === 'livreur' ? livreurStockMeta : homeStockMeta; }
+
+        async function saveStockTrackerSection(kind) {
+            await saveStockTrackers();
+            stockDirty[kind] = false;
+            alert('تم حفظ البيانات بنجاح!');
+        }
+
+        function openStockSettings(kind) {
+            stockSettingsKind = kind;
+            stockSettingsDraft = JSON.parse(JSON.stringify(stockMetaFor(kind)));
+            document.getElementById('stock-settings-title').innerText = (kind === 'livreur' ? 'الطلبات لي عند اللفرور' : 'السطوك لي عندي في الدار') + ' — تعديل المربعات والألوان';
+            renderStockSettingsList();
+            document.getElementById('stock-settings-modal').classList.remove('hidden');
+        }
+        function closeStockSettings() {
+            document.getElementById('stock-settings-modal').classList.add('hidden');
+        }
+        function renderStockSettingsList() {
+            const list = document.getElementById('stock-settings-list');
+            if (!list) return;
+            list.innerHTML = colors.map(item => {
+                const cur = (((stockSettingsDraft[item.id] || {}).color) || stockTrackerHex(item)).toLowerCase();
+                const palette = STOCK_PALETTE.map(c => '<div onclick="setStockDraftColor(\'' + item.id + '\', \'' + c.hex + '\')" title="' + c.name + '" style="background-color:' + c.hex + ';" class="w-7 h-7 rounded-full cursor-pointer border-2 ' + (cur === c.hex ? 'border-amber-400' : 'border-slate-700') + '"></div>').join('');
+                return `
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-extrabold text-white">${item.name}</span>
+                        <label class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">لون آخر <input type="color" value="${cur}" onchange="setStockDraftColor('${item.id}', this.value)" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border border-slate-700"></label>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">${palette}</div>
+                </div>`;
+            }).join('');
+        }
+        function setStockDraftColor(id, hex) {
+            if (!stockSettingsDraft[id]) stockSettingsDraft[id] = {};
+            stockSettingsDraft[id].color = hex;
+            renderStockSettingsList();
+        }
+        async function applyStockSettings() {
+            if (!stockSettingsKind) return;
+            const kind = stockSettingsKind;
+            if (kind === 'livreur') livreurStockMeta = stockSettingsDraft;
+            else homeStockMeta = stockSettingsDraft;
+            closeStockSettings();
+            renderStockTrackers();
+            await saveStockTrackers();
+            stockDirty[kind] = false;
+            alert('تم حفظ البيانات بنجاح!');
+        }
+        async function resetStockSection() {
+            if (!stockSettingsKind) return;
+            if (!confirm('هل أنت متأكد من تصفير جميع الأرقام إلى 0؟')) return;
+            const kind = stockSettingsKind;
+            const stockObj = kind === 'livreur' ? livreurStock : homeStock;
+            colors.forEach(item => { stockObj[item.id] = 0; });
+            closeStockSettings();
+            renderStockTrackers();
+            await saveStockTrackers();
+            stockDirty[kind] = false;
+            alert('تم حفظ البيانات بنجاح!');
         }
 
         function renderInventoryList() {
