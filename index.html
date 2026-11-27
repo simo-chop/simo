@@ -691,7 +691,10 @@
         setInterval(pollOrderUpdates, 3000);
 
         async function saveAllToSupabase() {
-            const payload = { orders, colors, categories, courierDebt, counters, livreurStock, homeStock, livreurStockMeta, homeStockMeta };
+            // Keep fields this page does not manage (e.g. tgAdmins) by merging into the latest saved payload
+            let base = {};
+            try { const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single(); if (data && data.payload) base = data.payload; } catch (e) {}
+            const payload = Object.assign({}, base, { orders, colors, categories, courierDebt, counters, livreurStock, homeStock, livreurStockMeta, homeStockMeta });
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
 
