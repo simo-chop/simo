@@ -244,6 +244,7 @@
                     <button onclick="openStockSettings('home')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>تعديل</span> ⚙️</button>
                     <button onclick="saveStockTrackerSection('home')" style="flex:2" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>حفظ</span> ✓</button>
                 </div>
+                <button id="home-share-btn" onclick="shareLivreurStockImage('home')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><i class="fa-brands fa-whatsapp text-lg"></i> <span>إرسال صورة السطوك للواتساب</span></button>
             </div>
 
         </section>
@@ -1050,12 +1051,16 @@
             ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
             ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
         }
-        async function buildLivreurStockImage() {
+        async function buildLivreurStockImage(kind) {
+            kind = kind || 'livreur';
+            const isHome = kind === 'home';
+            const stockSrc = isHome ? homeStock : livreurStock;
+            const metaSrc = isHome ? homeStockMeta : livreurStockMeta;
             try { await Promise.all([document.fonts.load('800 40px Cairo'), document.fonts.load('700 40px Cairo')]); } catch (e) {}
             const rows = colors.map(item => ({
                 name: item.name,
-                qty: Number(livreurStock[item.id]) || 0,
-                hex: ((livreurStockMeta[item.id] || {}).color) || stockTrackerHex(item)
+                qty: Number(stockSrc[item.id]) || 0,
+                hex: ((metaSrc[item.id] || {}).color) || stockTrackerHex(item)
             })).filter(r => r.qty > 0);
             const total = rows.reduce((a, r) => a + r.qty, 0);
             const W = 1080, headH = 330, rowH = 118, footH = 190;
@@ -1072,12 +1077,12 @@
             } catch (e) {}
             ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
             ctx.fillStyle = '#ffffff'; ctx.font = '900 54px Cairo, sans-serif'; ctx.fillText('SIMO CHOP', W / 2, 250);
-            ctx.fillStyle = '#fbbf24'; ctx.font = '800 38px Cairo, sans-serif'; ctx.fillText('السطوك لي مزال عند اللفرور', W / 2, 303);
+            ctx.fillStyle = '#fbbf24'; ctx.font = '800 38px Cairo, sans-serif'; ctx.fillText(isHome ? 'السطوك لي عندي في الدار' : 'السطوك لي مزال عند اللفرور', W / 2, 303);
             const d = new Date();
             const dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + '  ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             let y = headH;
             if (rows.length === 0) {
-                ctx.fillStyle = '#94a3b8'; ctx.font = '700 40px Cairo, sans-serif'; ctx.fillText('ما بقا والو عند اللفرور', W / 2, y + 70);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '700 40px Cairo, sans-serif'; ctx.fillText(isHome ? 'ما بقا والو فالدار' : 'ما بقا والو عند اللفرور', W / 2, y + 70);
             }
             rows.forEach(r => {
                 ctx.fillStyle = '#1e293b'; lsiRoundRect(ctx, 50, y, W - 100, rowH - 18, 28); ctx.fill();
@@ -1102,19 +1107,21 @@
             const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
             return { blob, cv };
         }
-        async function shareLivreurStockImage() {
-            const btn = document.getElementById('livreur-share-btn');
+        async function shareLivreurStockImage(kind) {
+            kind = kind || 'livreur';
+            const isHome = kind === 'home';
+            const btn = document.getElementById(isHome ? 'home-share-btn' : 'livreur-share-btn');
             const label = btn ? btn.querySelector('span') : null;
             const old = label ? label.textContent : '';
             if (label) label.textContent = '...';
             try {
-                const { blob } = await buildLivreurStockImage();
+                const { blob } = await buildLivreurStockImage(kind);
                 const d = new Date();
                 const pad = n => String(n).padStart(2, '0');
-                const fname = `simo-chop-stock-livreur-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.png`;
+                const fname = `simo-chop-stock-${isHome ? 'home' : 'livreur'}-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.png`;
                 const file = new File([blob], fname, { type: 'image/png' });
                 if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-                    try { await navigator.share({ files: [file], title: 'السطوك عند اللفرور' }); return; }
+                    try { await navigator.share({ files: [file], title: isHome ? 'السطوك لي فالدار' : 'السطوك عند اللفرور' }); return; }
                     catch (e) { if (e && e.name === 'AbortError') return; }
                 }
                 const url = URL.createObjectURL(blob);
