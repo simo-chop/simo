@@ -387,8 +387,8 @@
             order.deliveredAt = Date.now();
             order.courierName = courierTypedName || defaultCourierName;
 
-            // خصم الكمية من المخزون عند التسليم
-            if (order.items && Array.isArray(order.items)) {
+            // خصم الكمية من المخزون عند التسليم (مرة واحدة فقط لكل طلب)
+            if (!order.livreurStockDeducted && order.items && Array.isArray(order.items)) {
                 order.items.forEach(item => {
                     const prod = colors.find(c => c.id === item.productId);
                     if (prod) prod.stock = Math.max(0, (prod.stock || 0) - (item.qty || 1));
@@ -397,6 +397,7 @@
                         livreurStock[item.productId] = Math.max(0, curLv - (item.qty || 1));
                     }
                 });
+                order.livreurStockDeducted = true;
             }
 
 
