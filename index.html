@@ -69,9 +69,12 @@
     </header>
 
     <div class="max-w-6xl mx-auto px-4 mt-6">
-        <div class="bg-slate-800/60 border border-slate-700/60 p-1.5 rounded-2xl flex gap-2 max-w-md shadow-inner">
+        <div class="bg-slate-800/60 border border-slate-700/60 p-1.5 rounded-2xl flex gap-1.5 max-w-md shadow-inner">
             <button onclick="switchSellerTab('delivery')" id="stab-delivery" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-indigo-600 text-white transition-smooth shadow-sm flex items-center justify-center gap-2">
                 <i class="fa-solid fa-truck-fast"></i> <span>إدارة التوصيل</span>
+            </button>
+            <button onclick="switchSellerTab('livreur')" id="stab-livreur" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2">
+                <i class="fa-solid fa-motorcycle"></i> <span>عند اللفرور</span>
             </button>
             <button onclick="switchSellerTab('inventory')" id="stab-inventory" class="flex-1 py-2.5 rounded-xl font-extrabold text-xs bg-transparent text-slate-400 hover:text-white hover:bg-slate-800 transition-smooth flex items-center justify-center gap-2">
                 <i class="fa-solid fa-boxes-stacked"></i> <span>السطوك</span>
@@ -206,8 +209,7 @@
             </div>
         </section>
 
-        <!-- إدارة المخزون والفئات والمنتجات -->
-        <section id="seller-tab-inventory" class="space-y-4 hidden">
+        <section id="seller-tab-livreur" class="space-y-4 hidden">
             <!-- الطلبات لي عند اللفرور -->
             <div class="glass-panel p-5 rounded-3xl space-y-4">
                 <div class="flex items-center justify-between">
@@ -222,8 +224,12 @@
                     <button onclick="openStockSettings('livreur')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>تعديل</span> ⚙️</button>
                     <button onclick="saveStockTrackerSection('livreur')" style="flex:2" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><span>حفظ</span> ✓</button>
                 </div>
+                <button id="livreur-share-btn" onclick="shareLivreurStockImage()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-smooth"><i class="fa-brands fa-whatsapp text-lg"></i> <span>إرسال صورة السطوك للواتساب</span></button>
             </div>
+        </section>
 
+        <!-- إدارة المخزون والفئات والمنتجات -->
+        <section id="seller-tab-inventory" class="space-y-4 hidden">
             <!-- السطوك لي عندي في الدار -->
             <div class="glass-panel p-5 rounded-3xl space-y-4">
                 <div class="flex items-center justify-between">
@@ -1037,8 +1043,94 @@
             updateSellerStats();
         });
 
+
+        // صورة السطوك لي عند اللفرور: كتتصاوب فالمتصفح وكتتبعت بـ share sheet (ولا كتتحمل)
+        function lsiRoundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+        }
+        async function buildLivreurStockImage() {
+            try { await Promise.all([document.fonts.load('800 40px Cairo'), document.fonts.load('700 40px Cairo')]); } catch (e) {}
+            const rows = colors.map(item => ({
+                name: item.name,
+                qty: Number(livreurStock[item.id]) || 0,
+                hex: ((livreurStockMeta[item.id] || {}).color) || stockTrackerHex(item)
+            })).filter(r => r.qty > 0);
+            const total = rows.reduce((a, r) => a + r.qty, 0);
+            const W = 1080, headH = 330, rowH = 118, footH = 190;
+            const H = headH + Math.max(rows.length, 1) * rowH + footH;
+            const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+            const ctx = cv.getContext('2d');
+            ctx.direction = 'rtl';
+            const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0f172a'); g.addColorStop(1, '#0b0f19');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(0, 0, W, 10);
+            try {
+                const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'logo.png?v=' + Date.now(); });
+                ctx.save(); lsiRoundRect(ctx, W / 2 - 70, 45, 140, 140, 30); ctx.clip(); ctx.drawImage(img, W / 2 - 70, 45, 140, 140); ctx.restore();
+            } catch (e) {}
+            ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = '#ffffff'; ctx.font = '900 54px Cairo, sans-serif'; ctx.fillText('SIMO CHOP', W / 2, 250);
+            ctx.fillStyle = '#fbbf24'; ctx.font = '800 38px Cairo, sans-serif'; ctx.fillText('السطوك لي مزال عند اللفرور', W / 2, 303);
+            const d = new Date();
+            const dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + '  ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            let y = headH;
+            if (rows.length === 0) {
+                ctx.fillStyle = '#94a3b8'; ctx.font = '700 40px Cairo, sans-serif'; ctx.fillText('ما بقا والو عند اللفرور', W / 2, y + 70);
+            }
+            rows.forEach(r => {
+                ctx.fillStyle = '#1e293b'; lsiRoundRect(ctx, 50, y, W - 100, rowH - 18, 28); ctx.fill();
+                // مربع اللون
+                ctx.fillStyle = r.hex; lsiRoundRect(ctx, W - 50 - 84, y + 11, 74, 74, 18); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.font = '800 40px Cairo, sans-serif';
+                ctx.fillText(r.name, W - 50 - 110, y + 66);
+                // العدد
+                ctx.fillStyle = '#10b981'; lsiRoundRect(ctx, 80, y + 14, 150, 68, 20); ctx.fill();
+                ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.font = '900 46px Cairo, sans-serif';
+                ctx.fillText(String(r.qty), 155, y + 66);
+                y += rowH;
+            });
+            y += 5;
+            ctx.fillStyle = '#f59e0b'; lsiRoundRect(ctx, 50, y, W - 100, 100, 28); ctx.fill();
+            ctx.fillStyle = '#111827'; ctx.font = '900 46px Cairo, sans-serif';
+            ctx.textAlign = 'right'; ctx.fillText('المجموع', W - 90, y + 68);
+            ctx.textAlign = 'left'; ctx.fillText(String(total), 90, y + 68);
+            ctx.textAlign = 'center'; ctx.fillStyle = '#94a3b8'; ctx.font = '700 32px Cairo, sans-serif';
+            ctx.fillText(dateStr, W / 2, y + 160);
+            const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+            return { blob, cv };
+        }
+        async function shareLivreurStockImage() {
+            const btn = document.getElementById('livreur-share-btn');
+            const label = btn ? btn.querySelector('span') : null;
+            const old = label ? label.textContent : '';
+            if (label) label.textContent = '...';
+            try {
+                const { blob } = await buildLivreurStockImage();
+                const d = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const fname = `simo-chop-stock-livreur-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.png`;
+                const file = new File([blob], fname, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+                    try { await navigator.share({ files: [file], title: 'السطوك عند اللفرور' }); return; }
+                    catch (e) { if (e && e.name === 'AbortError') return; }
+                }
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = fname;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+                alert('تحملات الصورة، دابا صيفطها من الواتساب.');
+            } catch (e) {
+                alert('وقع مشكل فصنع الصورة، عاود حاول.');
+            } finally {
+                if (label) label.textContent = old;
+            }
+        }
+
         function switchSellerTab(tab) {
-            ['delivery', 'inventory'].forEach(t => {
+            ['delivery', 'livreur', 'inventory'].forEach(t => {
                 const el = document.getElementById(`seller-tab-${t}`);
                 const btn = document.getElementById(`stab-${t}`);
                 if (el) el.classList.toggle('hidden', t !== tab);
