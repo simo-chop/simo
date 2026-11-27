@@ -223,6 +223,30 @@
                     </button>
                 </div>
             </div>
+            <!-- الطلبات لي عند اللفرور -->
+            <div class="glass-panel p-5 rounded-3xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-motorcycle text-emerald-400"></i> <span>الطلبات لي عند اللفرور</span>
+                    </h2>
+                    <div id="livreur-stock-total" class="bg-slate-800 text-white font-extrabold px-4 py-1.5 rounded-xl text-sm">0</div>
+                </div>
+                <div id="livreur-stock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                <div class="text-[10px] text-slate-400 font-semibold">كينقص أوتوماتيكيا ملي كيتسلم أي طلب. تقدر تعدل يدويا بـ (+) و (-) ولا بالضغط على الرقم.</div>
+            </div>
+
+            <!-- السطوك لي عندي في الدار -->
+            <div class="glass-panel p-5 rounded-3xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-house text-amber-400"></i> <span>السطوك لي عندي في الدار</span>
+                    </h2>
+                    <div id="home-stock-total" class="bg-slate-800 text-white font-extrabold px-4 py-1.5 rounded-xl text-sm">0</div>
+                </div>
+                <div id="home-stock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                <div class="text-[10px] text-slate-400 font-semibold">سطوك الدار: تعديل يدوي بـ (+) و (-) ولا بالضغط على الرقم.</div>
+            </div>
+
             <div id="inventory-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
     </main>
@@ -433,6 +457,8 @@
         let categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         let counters = {};
         let courierDebt = 0; // يحفظ وقت آخر تصفير للحساب في Supabase
+        let livreurStock = {}; // الطلبات لي عند اللفرور
+        let homeStock = {}; // السطوك لي عندي في الدار
         let currentFilter = 'pending';
         let editingColorId = null;
         let currentOrderItems = [{ productId: '', qty: 1 }];
@@ -564,6 +590,8 @@
                     categories = data.payload.categories || DEFAULT_CATEGORIES;
                     courierDebt = data.payload.courierDebt || 0;
                     counters = data.payload.counters || {};
+                    livreurStock = data.payload.livreurStock || {};
+                    homeStock = data.payload.homeStock || {};
                 }
             } catch (e) {}
 
@@ -620,10 +648,12 @@
                     }
                 });
 
-                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0)) {
+                if (hasChanges || JSON.stringify(orders) !== JSON.stringify(incomingOrders) || courierDebt !== (data.payload.courierDebt || 0) || JSON.stringify(livreurStock) !== JSON.stringify(data.payload.livreurStock || {}) || JSON.stringify(homeStock) !== JSON.stringify(data.payload.homeStock || {})) {
                     orders = incomingOrders;
                     courierDebt = data.payload.courierDebt || 0;
                     if (data.payload.counters) counters = data.payload.counters;
+                    if (data.payload.livreurStock) livreurStock = data.payload.livreurStock;
+                    if (data.payload.homeStock) homeStock = data.payload.homeStock;
                     if (data.payload.colors) {
                         colors = data.payload.colors;
                         colors.forEach(item => { item.img = sanitizeImgPath(item.img, item.name); });
@@ -639,7 +669,7 @@
         setInterval(pollOrderUpdates, 3000);
 
         async function saveAllToSupabase() {
-            const payload = { orders, colors, categories, courierDebt, counters };
+            const payload = { orders, colors, categories, courierDebt, counters, livreurStock, homeStock };
             await sb.from('app_state').upsert({ id: 'simo_store_data', payload });
         }
 
@@ -1091,6 +1121,72 @@
             `).join('');
         }
 
+        function stockTrackerHex(item) {
+            const img = (item.img || '').toLowerCase();
+            if (img.indexOf('blan') !== -1 || img.indexOf('white') !== -1) return '#ffffff';
+            if (img.indexOf('black') !== -1) return '#000000';
+            if (img.indexOf('blue') !== -1) return '#2563eb';
+            if (img.indexOf('gray') !== -1 || img.indexOf('grey') !== -1) return '#6b7280';
+            if (img.indexOf('green') !== -1) return '#059669';
+            if (img.indexOf('pink') !== -1) return '#db2777';
+            if (img.indexOf('beige') !== -1) return '#f5efe6';
+            return '#475569';
+        }
+
+        function renderStockTrackers() {
+            renderStockTrackerGrid('livreur', livreurStock);
+            renderStockTrackerGrid('home', homeStock);
+        }
+
+        function renderStockTrackerGrid(kind, stockObj) {
+            const grid = document.getElementById(kind + '-stock-grid');
+            if (!grid) return;
+            let total = 0;
+            grid.innerHTML = colors.map(item => {
+                const val = Number(stockObj[item.id]) || 0;
+                total += val;
+                const hex = stockTrackerHex(item);
+                const isLight = (hex === '#ffffff' || hex === '#f5efe6');
+                const textColor = isLight ? '#111827' : '#ffffff';
+                return `
+                <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-2xl flex flex-col items-center gap-2 shadow-md">
+                    <div class="text-[11px] font-extrabold text-white text-center leading-snug">${item.name}</div>
+                    <input type="number" min="0" value="${val}" onchange="setStockTracker('${kind}', '${item.id}', this.value)" class="w-full h-14 rounded-xl text-center text-2xl font-extrabold border border-white/10 focus:outline-none" style="background-color:${hex};color:${textColor};box-shadow:inset 0 2px 4px rgba(0,0,0,0.25);">
+                    <div class="flex w-full gap-1.5">
+                        <button onclick="adjustStockTracker('${kind}', '${item.id}', -1)" class="flex-1 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 font-extrabold text-base">-</button>
+                        <button onclick="adjustStockTracker('${kind}', '${item.id}', 1)" class="flex-1 h-8 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-extrabold text-base">+</button>
+                    </div>
+                </div>`;
+            }).join('');
+            const totalEl = document.getElementById(kind + '-stock-total');
+            if (totalEl) totalEl.textContent = total;
+        }
+
+        function adjustStockTracker(kind, id, delta) {
+            const stockObj = kind === 'livreur' ? livreurStock : homeStock;
+            const cur = Number(stockObj[id]) || 0;
+            stockObj[id] = Math.max(0, cur + delta);
+            renderStockTrackers();
+            saveStockTrackers();
+        }
+
+        function setStockTracker(kind, id, val) {
+            const stockObj = kind === 'livreur' ? livreurStock : homeStock;
+            stockObj[id] = Math.max(0, parseInt(val) || 0);
+            renderStockTrackers();
+            saveStockTrackers();
+        }
+
+        async function saveStockTrackers() {
+            try {
+                const { data } = await sb.from('app_state').select('payload').eq('id', 'simo_store_data').single();
+                let currentPayload = data && data.payload ? data.payload : {};
+                currentPayload.livreurStock = livreurStock;
+                currentPayload.homeStock = homeStock;
+                await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
+            } catch (e) {}
+        }
+
         function renderInventoryList() {
             const list = document.getElementById('inventory-list');
             if (!list) return;
@@ -1118,6 +1214,7 @@
                 </div>
             `;
             }).join('');
+            renderStockTrackers();
         }
 
         function openPriceModal(id) {
