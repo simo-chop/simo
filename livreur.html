@@ -235,6 +235,7 @@
 
         let orders = [];
         let colors = [];
+        let livreurStock = {};
 
         async function loadCourierData() {
             try {
@@ -242,6 +243,7 @@
                 if (data && data.payload) {
                     orders = data.payload.orders || [];
                     colors = data.payload.colors || [];
+                    livreurStock = data.payload.livreurStock || {};
                 }
             } catch (e) {}
             renderCourierOrders();
@@ -253,6 +255,7 @@
                 let currentPayload = data && data.payload ? data.payload : {};
                 currentPayload.orders = orders;
                 if (colors.length > 0) currentPayload.colors = colors;
+                if (Object.keys(livreurStock).length > 0) currentPayload.livreurStock = livreurStock;
                 await sb.from('app_state').upsert({ id: 'simo_store_data', payload: currentPayload });
             } catch (e) {}
         }
@@ -262,6 +265,7 @@
               if (payload.new && payload.new.payload) {
                   orders = payload.new.payload.orders || [];
                   colors = payload.new.payload.colors || [];
+                  if (payload.new.payload.livreurStock) livreurStock = payload.new.payload.livreurStock;
                   renderCourierOrders();
               }
           })
@@ -388,6 +392,10 @@
                 order.items.forEach(item => {
                     const prod = colors.find(c => c.id === item.productId);
                     if (prod) prod.stock = Math.max(0, (prod.stock || 0) - (item.qty || 1));
+                    if (item.productId) {
+                        const curLv = Number(livreurStock[item.productId]) || 0;
+                        livreurStock[item.productId] = Math.max(0, curLv - (item.qty || 1));
+                    }
                 });
             }
 
